@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <title>Login</title>
+</head>
+
+<body>
+    <%-include('../partials/navlogged') %>
+
+    <div class="container my-4">
+        <%if(typeof arr != 'undefined'){
+            %>
+                <h1 class="text-center">Welcome MR/MRs <%=arr['username']%>.</h1>
+            <%
+        }%>
+        <h1 class="text-center">Book a ticket</h1>
+        <form action="/user/bookticket" method="post">
+            <div class="form-row">
+                <div class="col">
+                    <label for="from">From:</label>
+                    <select type="text" maxlength="20" class="form-control" id="from" name="from" required>
+                        <option value="">Choose..</option>
+                        <% for (const rows of results) { %>
+                          <option value="<%= rows.departure %>"><%= rows.departure %></option>
+                        <% } %>
+                    </select>
+                </div>
+                <div class="col">
+                    <label for="to">To:</label>
+                    <select type="text" maxlength="20" class="form-control" id="to" name="to" required>
+                        <option value="">Choose..</option>
+                        <% for (const rows of results) { %>
+                          <option value="<%= rows.departure %>"><%= rows.departure %></option>
+                        <% } %>
+                    </select>
+                </div>
+              </div>
+              <br>
+              
+              <div class="form-row">
+                  <div class="col">
+                    <label for="journeydate">Journey Date:</label>
+                    <input type="date" class="form-control" id="journeydate" name="journeydate" required>
+                  </div>
+              </div>
+              <br>
+    
+            <button type="submit" class="btn btn-primary">Search</button><br><br>
+        </form>
+    </div>
+
+    
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous">
+    </script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous">
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <title>Login</title>
+</head>
+
+<body>
+    <%-include('../partials/navadmin') %>
+
+    <div class="container my-4">
+        <div class="jumbotron">
+            <a href="/admin/admindashboard"><button type="button" class="btn btn-secondary my-2">Add a route and fare</button></a>
+            <a href="/admin/addtrain"><button type="button" class="btn btn-secondary my-2">Add a train</button></a>
+            <h1 class="text-center">Add a train</h1>
+            <form action="/admin/addtrain" method="post">
+    
+                <div class="form-row">
+                    <div class="col">
+                        <label for="trainname">Train Name</label>
+                        <input type="text" maxlength="100" class="form-control" id="trainname" name="trainname" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="col">
+                        <label for="departure">Departure</label><br>
+                        <select type="text" maxlength="100" class="form-control" id="departure" name="departure" required>
+                            <option value="">Choose..</option>
+                            <% for (const rows of results) { %>
+                              <option value="<%= rows.departure %>"><%= rows.departure %></option>
+                            <% } %>
+                        </select>                          
+                        </div>
+                    <div class="col">
+                        <label for="destination">destination</label>
+                        <select type="text" maxlength="100" class="form-control" id="destination" name="destination" required>
+                            <option value="">Choose..</option>
+                            <% for (const rows of results) { %>     
+                              <option value="<%= rows.departure %>"><%= rows.departure %></option>
+                            <% } %>
+                        </select> 
+                    </div>
+                </div>
+                <br>
+                <div class="form-row">
+                    <div class="form-row">
+                        <div class="col">
+                          <label for="journeydate">Date</label>
+                          <input type="date" class="form-control" id="journeydate" name="journeydate" required>
+                        </div>
+                        <div class="col">
+                          <label for="departuretime">Departure Time</label>
+                          <input type="datetime-local" class="form-control" id="departuretime" name="departuretime" required>
+                        </div>
+                        <div class="col">
+                          <label for="arrivaltime">Arrival Time</label>
+                          <input type="datetime-local" class="form-control" id="arrivaltime" name="arrivaltime" required>
+                        </div>
+                        <div class="col">
+                          <label for="seats">Seats</label>
+                          <input type="number" class="form-control" id="seats" name="seats" required>
+                        </div>
+                    </div>
+                </div>
+                <br>
+        
+                <button type="submit" class="btn btn-success">Add train information</button><br><br>
+            </form>
+        </div>
+    </div>
+
+    
+
+    
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous">
+    </script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous">
+    </script>
+</body>
+
+</html>
