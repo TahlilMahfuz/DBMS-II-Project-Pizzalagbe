@@ -17,18 +17,18 @@
     <%-include('../partials/nav') %>
 
     <div class="container my-4">
-        <h1 class="text-center">Signup to SMetro</h1>
+        <h1 class="text-center">Signup to pizzalagbe</h1>
         <form action="/user/usersignup" method="post">
             <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" maxlength="20" class="form-control" id="username" name="username"
-                    aria-describedby="emailHelp" placeholder="Not email" required>
+                <label for="firstname">First Name</label>
+                <input type="text" maxlength="20" class="form-control" id="firstname" name="firstname"
+                    aria-describedby="emailHelp"  required>
             </div>
 
             <div class="form-group">
-                <label for="usernid">NID</label>
-                <input type="text" maxlength="20" class="form-control" id="usernid" name="usernid"
-                    aria-describedby="emailHelp" placeholder="" required>
+                <label for="lastname">Last Name</label>
+                <input type="text" maxlength="20" class="form-control" id="lastname" name="lastname"
+                    aria-describedby="emailHelp"  required>
             </div>
 
             <div class="form-group">
@@ -40,6 +40,11 @@
             <div class="form-group">
                 <label for="userphone">phone</label>
                 <input type="tel" class="form-control" id="phone" name="userphone" maxlength="11" pattern="[0-9]{11}" placeholder="01XXXXXXXXX(Use only digits)" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="branch">Branch</label>
+                <input type="text" class="form-control" id="phone" name="branch" required>
             </div>
 
             <div class="form-group">
@@ -54,7 +59,7 @@
 
             <button type="submit" class="btn btn-primary">SignUp</button><br><br>
         </form>
-        <a class="btn btn-success" href="/admin/adminsignup"><h7>Sign up as admin</h7></a>
+        <a class="btn btn-success" href="/deliveryman/deliverymansignup"><h7>Sign up as deliveryman</h7></a>
 
     </div>
 

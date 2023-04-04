@@ -16,7 +16,7 @@ const sendMail=async(useremail,otp,subject,message)=>{
     });
 
     let info = await transporter.sendMail({
-        from: '"SMetro 👻" <smetro@gmail.com>',
+        from: '"pizzalagbe 👻" <pizzalagbe@gmail.com>',
         to: useremail,
         subject: subject, 
         text: message+ otp, 
