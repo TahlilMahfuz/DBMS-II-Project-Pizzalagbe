@@ -22,41 +22,9 @@
                 <h1 class="text-center">Welcome MR/MRs <%=arr['username']%>.</h1>
             <%
         }%>
-        <h1 class="text-center">Book a ticket</h1>
-        <form action="/user/bookticket" method="post">
-            <div class="form-row">
-                <div class="col">
-                    <label for="from">From:</label>
-                    <select type="text" maxlength="20" class="form-control" id="from" name="from" required>
-                        <option value="">Choose..</option>
-                        <% for (const rows of results) { %>
-                          <option value="<%= rows.departure %>"><%= rows.departure %></option>
-                        <% } %>
-                    </select>
-                </div>
-                <div class="col">
-                    <label for="to">To:</label>
-                    <select type="text" maxlength="20" class="form-control" id="to" name="to" required>
-                        <option value="">Choose..</option>
-                        <% for (const rows of results) { %>
-                          <option value="<%= rows.departure %>"><%= rows.departure %></option>
-                        <% } %>
-                    </select>
-                </div>
-              </div>
-              <br>
-              
-              <div class="form-row">
-                  <div class="col">
-                    <label for="journeydate">Journey Date:</label>
-                    <input type="date" class="form-control" id="journeydate" name="journeydate" required>
-                  </div>
-              </div>
-              <br>
-    
-            <button type="submit" class="btn btn-primary">Search</button><br><br>
-        </form>
-    </div>
+        <div class="text-center">
+            <img src="../img/train.png" class="mx-auto" height="600" width="1000" alt="Responsive image">
+        </div>
 
     
 

@@ -49,21 +49,9 @@ app.get("/",checkIndexAuthenticated,(req,res) =>{
 app.get("/user/dashboard",(req,res) =>{
     req.session.user=req.user;
     req.session.save();
-    let arr=[];
-    arr['username']=req.session.user.username;
-    arr['userid']=req.user.userid;
+    
 
-    pool.query(
-        `select distinct departure from fares`,
-        (err,results)=>{
-            if(err){
-                throw err;
-            }
-            console.log(results);
-            const resultsArray = Array.from(results.rows);
-            res.render('user/dashboard',{results: resultsArray,arr});
-        }
-    );
+    res.render('user/dashboard');
     
 })
 
@@ -136,9 +124,9 @@ app.get("/user/tickethistory",(req,res) =>{
 
 app.post("/user/usersignup",async (req,res) =>{
 
-    let {username,usernid,useremail,userphone,userpassword,cuserpassword} = req.body;
+    let {firstname,lastname,useremail,userphone,userpassword,cuserpassword,branch} = req.body;
 
-    console.log(username,usernid,useremail,userphone,userpassword,cuserpassword);
+    console.log(firstname,lastname,useremail,userphone,userpassword,cuserpassword,branch);
     
     let error=[];
 
@@ -150,10 +138,10 @@ app.post("/user/usersignup",async (req,res) =>{
         const userotp = Math.floor(1000 + Math.random() * 9000);
 
         pool.query(
-            `select * from users where useremail=$1`,[useremail],
+            `select * from customers where customeremail=$1`,[useremail],
             (err,results)=>{
                 if(err){
-                    throw err;
+                    throw err;  
                 }
                 console.log("database connected");
                 console.log(results.rows);
@@ -166,7 +154,7 @@ app.post("/user/usersignup",async (req,res) =>{
                     let message="Your otp varification code is ";
                     let subject="Verify your account";
                     sendMail(useremail,userotp,subject,message);
-                    res.render('user/register',{username,usernid,useremail,userphone,userpassword,userotp});
+                    res.render('user/register',{firstname,lastname,useremail,userphone,userpassword,userotp,branch});
                 }
             }
         );
@@ -174,7 +162,7 @@ app.post("/user/usersignup",async (req,res) =>{
 })
 
 app.post("/user/register",async (req,res) =>{
-    let {username,usernid,useremail,userphone,userpassword,userotp,uservarcode} = req.body;
+    let {firstname,lastname,useremail,userphone,userpassword,userotp,branch,uservarcode} = req.body;
     let error=[];
     if(userotp!=uservarcode){
         error.push({message:"Invalid varification code"});
@@ -184,23 +172,34 @@ app.post("/user/register",async (req,res) =>{
         let hash=await bcrypt.hash(userpassword,10);
         console.log(hash);
         pool.query(
-            `INSERT INTO users (username,usernid,useremail,userphone,userpassword)
-                VALUES ($1, $2, $3, $4, $5)
-                RETURNING username,usernid,useremail,userphone,userpassword`,
-            [username,usernid,useremail,userphone,hash],
+            `select * from branches where branchname=$1`,
+            [branch],
             (err, results) => {
             if (err) {
                 throw err;
             }
-                console.log(results.rows);
-                console.log("Data inserted");
-                req.flash("success_msg", "You are now registered. Please log in");
-
-                let no_err=[];
-                no_err.push({message:"Account created. You can log in now"});
-                res.render("user/userlogin",{no_err});
+            let br=results.rows[0].branchid;
+            pool.query(
+                `INSERT INTO customers (firstname,lastname,customeremail,customerphone,customerpassword,branchid)
+                    VALUES ($1, $2, $3, $4, $5,$6)
+                    RETURNING firstname,lastname,customeremail,customerphone,customerpassword,branchid`,
+                [firstname,lastname,useremail,userphone,hash,br],
+                (err, results) => {
+                if (err) {
+                    throw err;
+                }
+                    console.log(results.rows);
+                    console.log("Data inserted");
+                    req.flash("success_msg", "You are now registered. Please log in");
+    
+                    let no_err=[];
+                    no_err.push({message:"Account created. You can log in now"});
+                    res.render("user/userlogin",{no_err});
+                }
+            );
             }
         );
+        
     }
 })
 
