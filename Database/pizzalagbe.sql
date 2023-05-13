@@ -125,6 +125,8 @@ REFERENCES "pizzas" ("pizzaid");
 ALTER TABLE "orderpizzatopping" ADD CONSTRAINT "fk_orderpizzatopping_toppingid" FOREIGN KEY("toppingid")
 REFERENCES "toppings" ("toppingid");
 
+
+-- rough
 INSERT INTO branches (branchname)
                         VALUES ('dhaka');
 
