@@ -1,67 +1,92 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
     <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous" />
 
-    <title>Login</title>
+    <title>Admin Dashboard</title>
 </head>
 
 <body>
     <%-include('../partials/navadmin') %>
+        <div class="container my-4">
+            <div class="jumbotron">
+                <h1 class="text-center">Add Deliveryman</h1>
 
-    <div class="container my-4">
-        <div class="jumbotron">
-            <a href="/admin/admindashboard"><button type="button" class="btn btn-secondary my-2">Add a route and fare</button></a>
-            <a href="/admin/addtrain"><button type="button" class="btn btn-secondary my-2">Add a train</button></a>
-            <h1 class="text-center">Add route fare</h1>
-            <form action="/admin/addroute" method="post">
-    
-                <div class="form-row">
-                    <div class="col">
-                        <label for="departure">From:</label>
-                        <input type="text" maxlength="20" class="form-control" id="departure" name="departure" required>
+                <form action="/admin/adddeliveryman" method="post">
+                    <br />
+                    <div class="form-row">
+                        <div class="col">
+                            <label for="amount">Delivery Man Name:</label>
+                            <input type="text" class="form-control" id="name" name="name" required />
+                        </div>
                     </div>
-                    <div class="col">
-                        <label for="destination">To:</label>
-                        <input type="text" maxlength="20" class="form-control" id="destination" name="destination" required>
+                    <div class="form-row">
+                        <div class="col">
+                            <label for="amount">Delivery Man Type(Home Delivery OR Take Away)</label>
+                            <select class="form-control" id="dtype" name="dtype" required
+                                onchange="updateHiddenValue('dtype')">
+                                <option value="">Choose..</option>
+                                <% for (const row of result) { %>
+                                    <option value="<%= row.typeid %>">
+                                        <%= row.type %>
+                                    </option>
+                                    <% } %>
+                            </select>
+                            <input type="hidden" id="hidden_dtype" name="hidden_dtype" />
+                        </div>
                     </div>
-                </div>
-                  <br>
-                  <div class="form-row">
-                      <div class="col">
-                        <label for="amount">Amount</label>
-                        <input type="text" class="form-control" id="amount" name="amount" required>
-                      </div>
-                  </div>
-                  <br>
-        
-                <button type="submit" class="btn btn-success">Add route fare</button><br><br>
-            </form>
+                    <br />
+                    <div class="form-row">
+                        <div class="col">
+                            <label for="amount">Branch</label>
+                            <select class="form-control" id="branch" name="branch" required
+                                onchange="updateHiddenValue('branch')">
+                                <option value="">Choose..</option>
+                                <% for (const row of results) { %>
+                                    <option value="<%= row.branchid %>">
+                                        <%= row.branchname %>
+                                    </option>
+                                    <% } %>
+                            </select>
+                            <input type="hidden" id="hidden_branch" name="hidden_branch" />
+                        </div>
+                        <div class="col">
+                            <label for="amount">Phone Number</label>
+                            <input type="text" class="form-control" id="phone" name="phone" maxlength="11"
+                                placeholder="01XXXXXXXXX" required />
+                        </div>
+                    </div>
+                    <br />
+                    <br />
+                    <button type="submit" class="btn btn-success">Add Delivery Man</button><br /><br />
+                </form>
+            </div>
         </div>
-    </div>
 
-    
-
-    
-
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
-        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous">
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
-        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous">
-    </script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
-        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous">
-    </script>
+        <!-- Optional JavaScript -->
+        <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+        <script>
+            function updateHiddenValue(elementId) {
+                const selectedOption = document.getElementById(elementId).value;
+                document.getElementById(`hidden_${elementId}`).value = selectedOption;
+            }
+        </script>
+        <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+            integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+            crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+            integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+            crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+            integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+            crossorigin="anonymous"></script>
 </body>
 
 </html>

@@ -1,131 +1,103 @@
-﻿drop table orderpizzatopping;
-drop table orderpizzas;
-drop table orders;
-drop table pizzas;
-drop table toppings;
-drop table customers;
-drop table deliveryman;
-drop table branches;
-drop table ordertype;
-
-CREATE TABLE "customers" (
-    "customerid" serial  ,
-    "firstname" varchar(50)   ,
-    "lastname" varchar(50)   ,
-    "customeremail" varchar(100)   ,
-    "customerphone" varchar(20)   ,
-    "branchid" int   ,
-    "customerpassword" varchar(300),
-    CONSTRAINT "pk_customers" PRIMARY KEY (
-        "customerid"
-     )
+﻿DROP TABLE IF EXISTS admin;
+create table admins(
+    adminid serial primary key,
+    adminname varchar(100),
+    adminNID varchar(100),
+    adminemail varchar(100),
+    adminphone varchar(100),
+    adminpassword varchar(300),
+    reg_date date not null default current_timestamp
 );
 
-CREATE TABLE "branches" (
-    "branchid" serial primary key,
-    "branchname" varchar(20)
+DROP TABLE IF EXISTS orderpizzatopping;
+DROP TABLE IF EXISTS orders;
+DROP TABLE IF EXISTS pizzas;
+DROP TABLE IF EXISTS toppings;
+DROP TABLE IF EXISTS customers;
+DROP TABLE IF EXISTS deliveryman;
+DROP TABLE IF EXISTS branches;
+DROP TABLE IF EXISTS ordertype;
+
+
+
+CREATE TABLE branches (
+    branchid SERIAL PRIMARY KEY,
+    branchname VARCHAR(20)
 );
 
-CREATE TABLE "orders" (
-    "orderid" int   ,
-    "customerid" int   ,
-    "deliverymanid" int   ,
-    "typeid" int   ,
-    "total" double precision  ,
-    "datetime" timestamp  ,
-    "address" varchar(100) ,
-    CONSTRAINT "pk_orders" PRIMARY KEY (
-        "orderid"
-     )
+CREATE TABLE customers (
+    customerid SERIAL PRIMARY KEY,
+    firstname VARCHAR(50),
+    lastname VARCHAR(50),
+    customeremail VARCHAR(100),
+    customerphone VARCHAR(20),
+    branchid INT,
+    customerpassword VARCHAR(300),
+    CONSTRAINT fk_customers_branchid FOREIGN KEY (branchid)
+        REFERENCES branches (branchid)
+);
+
+CREATE TABLE ordertype (
+    typeid serial PRIMARY KEY,
+    type VARCHAR(20)
+);
+
+CREATE TABLE deliveryman (
+    deliverymanid SERIAL PRIMARY KEY,
+    typeid INT,
+    name VARCHAR(20),
+    branchid INT,
+    avaiability INT default 1,
+    CONSTRAINT fk_deliveryman_typeid FOREIGN KEY (typeid)
+        REFERENCES ordertype (typeid),
+    CONSTRAINT fk_deliveryman_branchid FOREIGN KEY (branchid)
+        REFERENCES branches (branchid)
+);
+
+CREATE TABLE orders (
+    orderid SERIAL PRIMARY KEY,
+    customerid INT,
+    deliverymanid INT,
+    typeid INT,
+    total DOUBLE PRECISION,
+    datetime TIMESTAMP,
+    address VARCHAR(100),
+    CONSTRAINT fk_orders_customerid FOREIGN KEY (customerid)
+        REFERENCES customers (customerid),
+    CONSTRAINT fk_orders_deliverymanid FOREIGN KEY (deliverymanid)
+        REFERENCES deliveryman (deliverymanid),
+    CONSTRAINT fk_orders_typeid FOREIGN KEY (typeid)
+        REFERENCES ordertype (typeid)
+);
+
+CREATE TABLE pizzas (
+    pizzaid serial PRIMARY KEY,
+    pizzaname VARCHAR(20),
+    details VARCHAR(100),
+    price DOUBLE PRECISION
+);
+
+CREATE TABLE toppings (
+    toppingid serial PRIMARY KEY,
+    toppingname VARCHAR(20),
+    details VARCHAR(200),
+    price DOUBLE PRECISION
+);
+
+CREATE TABLE orderpizzatopping (
+    orderid INT,
+    pizzaid INT,
+    toppingid INT,
+    CONSTRAINT fk_orderpizzatopping_orderid FOREIGN KEY (orderid)
+        REFERENCES orders (orderid),
+    CONSTRAINT fk_orderpizzatopping_pizzaid FOREIGN KEY (pizzaid)
+        REFERENCES pizzas (pizzaid),
+    CONSTRAINT fk_orderpizzatopping_toppingid FOREIGN KEY (toppingid)
+        REFERENCES toppings (toppingid)
 );
 
 
-CREATE TABLE "deliveryman" (
-    "deliverymanid" int   ,
-    -- orderid int fk >- orders.orderid
-    "typeid" int   ,
-    "name" varchar(20)   ,
-    "branchid" int   ,
-    "avaiability" int  ,
-    CONSTRAINT "pk_deliveryman" PRIMARY KEY (
-        "deliverymanid"
-     )
-);
 
-CREATE TABLE "ordertype" (
-    "typeid" int   ,
-    "type" varchar(20)   ,
-    CONSTRAINT "pk_ordertype" PRIMARY KEY (
-        "typeid"
-     )
-);
 
-CREATE TABLE "orderpizzas" (
-    "orderid" int   ,
-    "pizzaid" int   ,
-    "quantity" int   ,
-    "userrating" double precision  ,
-    "comment" varchar(80)
-);
-
-CREATE TABLE "pizzas" (
-    "pizzaid" int   ,
-    "pizzaname" varchar(20)   ,
-    "details" varchar(100)   ,
-    "price" double precision  ,
-    "rating" double precision  ,
-    CONSTRAINT "pk_pizzas" PRIMARY KEY (
-        "pizzaid"
-     )
-);
-
-CREATE TABLE "toppings" (
-    "toppingid" int   ,
-    "toppingname" varchar(20)   ,
-    "details" varchar(200)   ,
-    "price" double precision  ,
-    CONSTRAINT "pk_toppings" PRIMARY KEY (
-        "toppingid"
-     )
-);
-
-CREATE TABLE "orderpizzatopping" (
-    "orderid" int   ,
-    "pizzaid" int   ,
-    "toppingid" int
-);
-
-ALTER TABLE "customers" ADD CONSTRAINT "fk_customers_branchid" FOREIGN KEY("branchid")
-REFERENCES "branches" ("branchid");
-
-ALTER TABLE "orders" ADD CONSTRAINT "fk_orders_customerid" FOREIGN KEY("customerid")
-REFERENCES "customers" ("customerid");
-
-ALTER TABLE "orders" ADD CONSTRAINT "fk_orders_deliverymanid" FOREIGN KEY("deliverymanid")
-REFERENCES "deliveryman" ("deliverymanid");
-
-ALTER TABLE "orders" ADD CONSTRAINT "fk_orders_typeid" FOREIGN KEY("typeid")
-REFERENCES "ordertype" ("typeid");
-
-ALTER TABLE "deliveryman" ADD CONSTRAINT "fk_deliveryman_typeid" FOREIGN KEY("typeid")
-REFERENCES "ordertype" ("typeid");
-
-ALTER TABLE "deliveryman" ADD CONSTRAINT "fk_deliveryman_branchid" FOREIGN KEY("branchid")
-REFERENCES "branches" ("branchid");
-
-ALTER TABLE "orderpizzas" ADD CONSTRAINT "fk_orderpizzas_orderid" FOREIGN KEY("orderid")
-REFERENCES "orders" ("orderid");
-
-ALTER TABLE "orderpizzatopping" ADD CONSTRAINT "fk_orderpizzatopping_orderid" FOREIGN KEY("orderid")
-REFERENCES "orders" ("orderid");
-
-ALTER TABLE "orderpizzatopping" ADD CONSTRAINT "fk_orderpizzatopping_pizzaid" FOREIGN KEY("pizzaid")
-REFERENCES "pizzas" ("pizzaid");
-
-ALTER TABLE "orderpizzatopping" ADD CONSTRAINT "fk_orderpizzatopping_toppingid" FOREIGN KEY("toppingid")
-REFERENCES "toppings" ("toppingid");
-
-INSERT INTO branches (branchname)
-                        VALUES ('dhaka');
 
 
