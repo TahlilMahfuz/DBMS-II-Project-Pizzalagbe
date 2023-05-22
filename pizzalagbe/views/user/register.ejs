@@ -15,36 +15,6 @@
 
 <body>
     <%-include('../partials/nav') %>
-    <%if(typeof error != 'undefined'){
-        error.forEach(error => {
-            %>
-                <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                    <strong>Sorry!</strong> <%=error.message%>
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-            <%
-        }) %>
-        <%
-        delete error;
-        delete no_err;
-    } %>
-
-    <%if(typeof no_err != 'undefined'){
-        no_err.forEach(no_err => {
-            %>
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <strong>Success!</strong> <%=no_err.message%>
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-            <%
-        }) %>
-        <%
-        delete no_err;
-    } %>
 
     <div class="container my-4">
         <h3 class="text-center">An email would be send to your provided email <%=useremail%>.

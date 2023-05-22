@@ -450,7 +450,35 @@ app.get("/admin/adminsignup", (req,res) =>{
     res.render('admin/adminsignup');
 })
 app.get("/admin/admindashboard", (req,res) =>{
-    res.render('admin/admindashboard');
+    pool.query(
+        `select * from branches`,
+        (err,results)=>{
+            if(err){
+                throw err;
+            }
+            const resultsArray = Array.from(results.rows);
+            pool.query(
+                `select * from ordertype`,
+                (err,result)=>{
+                    if(err){
+                        throw err;
+                    }
+                    
+                    const resultArray = Array.from(result.rows);
+                    res.render('admin/admindashboard',{results: resultsArray,result: resultArray});
+                }
+            );
+        }
+    );
+})
+app.get("/admin/addpizza", (req,res) =>{
+    res.render('admin/addpizza');
+})
+app.get("/admin/addtopping", (req,res) =>{
+    res.render('admin/addtopping');
+})
+app.get("/admin/addbranch", (req,res) =>{
+    res.render('admin/addbranch');
 })
 app.get("/admin/addtrain", (req,res) =>{
     pool.query(
@@ -479,6 +507,89 @@ app.get("/admin/addtrain", (req,res) =>{
 
 
 // Admin Post Methods
+app.post("/admin/adddeliveryman",async (req,res) =>{
+
+    let {name,dtype,hidden_dtype,branch,hidden_branch,phone} = req.body;
+
+    console.log(name,dtype,branch,phone);
+
+    pool.query(
+        `insert into deliveryman (typeid, name, branchid) 
+        values($1,$2,$3) returning deliverymanid,name,typeid,branchid,avaiability;`,[dtype,name,branch],
+        (err,results)=>{
+            if(err){
+                throw err;
+            }
+            else{
+                let no_err=[];
+                no_err.push({message:"Delivery man has been inserted"});
+                pool.query(
+                    `select * from branches`,
+                    (err,results)=>{
+                        if(err){
+                            throw err;
+                        }
+                        const resultsArray = Array.from(results.rows);
+                        pool.query(
+                            `select * from ordertype`,
+                            (err,result)=>{
+                                if(err){
+                                    throw err;
+                                }
+                                
+                                const resultArray = Array.from(result.rows);
+                                res.render('admin/admindashboard',{results: resultsArray,result: resultArray});
+                            }
+                        );
+                    }
+                );
+            }
+        }
+    );
+    
+})
+app.post("/admin/addpizza",async (req,res) =>{
+
+    let {pizzaname,details,price} = req.body;
+
+    console.log(pizzaname,details,price);
+    
+    pool.query(
+        `Insert into pizzas (pizzaname, details, price)
+        values ($1,$2,$3) returning pizzaname,details,price`,[pizzaname,details,price],
+        (err,results)=>{
+            if(err){
+                throw err;
+            }
+            else{
+                let no_err=[];
+                no_err.push({message:"Pizza has been inserted"});
+                res.render('admin/addpizza',{no_err});
+            }
+        }
+    );
+})
+app.post("/admin/addtopping",async (req,res) =>{
+
+    let {toppingname,details,price} = req.body;
+
+    console.log(toppingname,details,price);
+    
+    pool.query(
+        `Insert into toppings (toppingname, details, price)
+        values ($1,$2,$3) returning toppingname,details,price`,[toppingname,details,price],
+        (err,results)=>{
+            if(err){
+                throw err;
+            }
+            else{
+                let no_err=[];
+                no_err.push({message:"topping has been inserted"});
+                res.render('admin/addtopping',{no_err});
+            }
+        }
+    );
+})
 app.post("/admin/adminsignup",async (req,res) =>{
 
     let {masterkey,adminname,adminnid,adminemail,adminphone,adminpassword,cadminpassword} = req.body;
@@ -597,109 +708,6 @@ app.post("/admin/adminlogin",async (req,res) =>{
           }
         }
       );
-})
-
-app.post("/admin/addroute",async (req,res) =>{
-    let {departure,destination,amount} = req.body;
-    console.log(departure+" " +destination+" " +amount);
-
-    let error=[],no_err=[];
-
-    pool.query(
-        `select * from fares where departure=$1 and destination=$2`,
-        [departure,destination],
-        (err, results) => {
-          if (err) {
-            throw err;
-          }
-          console.log(results.rows);
-          console.log(results.rows.length);
-  
-          if (results.rows.length > 0) {
-            error.push({message:"Route already exists"});
-            res.render("admin/admindashboard",{error});
-          }
-          else{
-            pool.query(
-                `INSERT INTO fares (departure,destination,amount)
-                    VALUES ($1, $2, $3)
-                    RETURNING fareid,departure,destination,amount`,
-                [departure,destination,amount],
-                (err, results) => {
-                if (err) {
-                    throw err;
-                }
-                }
-            );
-            pool.query(
-                `INSERT INTO fares (departure,destination,amount)
-                    VALUES ($1, $2, $3)
-                    RETURNING fareid,departure,destination,amount`,
-                [destination,departure,amount],
-                (err, results) => {
-                if (err) {
-                    throw err;
-                }
-                    // console.log(results.rows);
-                    
-                    no_err.push({message:"Fare Inserted"});
-                    res.render("admin/admindashboard",{no_err});
-                }
-            );
-          }
-        }
-      );
-})
-
-
-app.post("/admin/addtrain",async (req,res) =>{
-    let {trainname,departure,destination,seats,journeydate,departuretime,arrivaltime} = req.body;
-    console.log(trainname,departure,destination,seats,journeydate,departuretime,arrivaltime);
-    console.log(destination,departure);
-    
-    if(departure==destination){
-        let error=[];
-        error.push({message:"Departure and Destination should be different"});
-        pool.query(
-            `select distinct departure from fares`,
-            (err,results)=>{
-                if(err){
-                    throw err;
-                }
-                
-                const resultsArray = Array.from(results.rows);
-                
-                res.render('admin/addtrain',{results: resultsArray,error});
-            }
-        );
-    }
-    else{
-        pool.query(
-            `INSERT INTO trains (trainname,departure,destination,seats,departuredate,departuretime,arrivaltime)
-                VALUES ($1, $2, $3,$4,$5,$6,$7)
-                RETURNING trainname,departure,destination,seats,departuredate,departuretime,arrivaltime`,
-            [trainname,departure,destination,seats,journeydate,departuretime,arrivaltime],
-            (err, results) => {
-            if (err) {
-                throw err;
-            }
-                console.log(results.rows);
-            }
-        );
-        pool.query(
-            `select distinct departure from fares`,
-            (err,results)=>{
-                if(err){
-                    throw err;
-                }
-                
-                const resultsArray = Array.from(results.rows);
-                let no_err=[];
-                no_err.push({message:"Train Info Inserted"});
-                res.render('admin/addtrain',{results: resultsArray,no_err});
-            }
-        );
-    }
 })
 
 
