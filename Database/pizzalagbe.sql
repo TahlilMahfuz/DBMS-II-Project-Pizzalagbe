@@ -1,12 +1,13 @@
-﻿DROP TABLE IF EXISTS admin;
+﻿DROP TABLE IF EXISTS admins;
 create table admins(
     adminid serial primary key,
+    branchid int,
     adminname varchar(100),
-    adminNID varchar(100),
     adminemail varchar(100),
     adminphone varchar(100),
     adminpassword varchar(300),
-    reg_date date not null default current_timestamp
+    reg_date date not null default current_timestamp,
+    foreign key (branchid) references branches(branchid)
 );
 
 DROP TABLE IF EXISTS orderpizzatopping;
@@ -48,6 +49,7 @@ CREATE TABLE deliveryman (
     name VARCHAR(20),
     branchid INT,
     avaiability INT default 1,
+    password varchar(512),
     CONSTRAINT fk_deliveryman_typeid FOREIGN KEY (typeid)
         REFERENCES ordertype (typeid),
     CONSTRAINT fk_deliveryman_branchid FOREIGN KEY (branchid)
@@ -62,10 +64,13 @@ CREATE TABLE orders (
     total DOUBLE PRECISION,
     datetime TIMESTAMP,
     address VARCHAR(100),
+    branchid int,
     CONSTRAINT fk_orders_customerid FOREIGN KEY (customerid)
         REFERENCES customers (customerid),
     CONSTRAINT fk_orders_deliverymanid FOREIGN KEY (deliverymanid)
         REFERENCES deliveryman (deliverymanid),
+        CONSTRAINT fk_orders_branches FOREIGN KEY (branchid)
+        REFERENCES branches (branchid),
     CONSTRAINT fk_orders_typeid FOREIGN KEY (typeid)
         REFERENCES ordertype (typeid)
 );
