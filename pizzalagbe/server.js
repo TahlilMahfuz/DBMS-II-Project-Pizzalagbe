@@ -71,43 +71,6 @@ app.get("/userlogout", (req, res) => {
     });
 });
 
-app.get("/user/tickethistory",(req,res) =>{
-    let uid=req.session.user.userid;
-    
-    pool.query(
-        `SELECT *
-        FROM reservation natural join trains natural join users
-        WHERE userid =$1 and avaiability=1
-        order by reserve_time desc`,[uid],
-        (err,results)=>{
-            if(err){
-                throw err;
-            }
-            console.log("database connected");
-            console.log(results.rows);
-
-            if(results.rows.length>0){
-                res.render("user/tickethistory",{results});
-            }
-            else{
-                let no_err=[];
-                no_err.push({message:"Sorry you have no previous tickets"});
-                pool.query(
-                    `select distinct departure from fares`,
-                    (err,results)=>{
-                        if(err){
-                            throw err;
-                        }
-                        console.log(results);
-                        const resultsArray = Array.from(results.rows);
-                        res.render('user/dashboard',{results: resultsArray,no_err});
-                    }
-                );
-            }
-        }
-    );
-})
-
 
 
 
@@ -447,7 +410,17 @@ app.get("/admin/adminlogin",checkAuthenticated,(req,res) =>{
 })
 
 app.get("/admin/adminsignup", (req,res) =>{
-    res.render('admin/adminsignup');
+    pool.query(
+        `select * from branches`,
+        (err,results)=>{
+            if(err){
+                throw err;
+            }
+            
+            const resultsArray = Array.from(results.rows);
+            res.render('admin/adminsignup',{results: resultsArray});
+        }
+    );
 })
 app.get("/admin/admindashboard", (req,res) =>{
     pool.query(
@@ -479,20 +452,7 @@ app.get("/admin/addtopping", (req,res) =>{
 })
 app.get("/admin/addbranch", (req,res) =>{
     res.render('admin/addbranch');
-})
-app.get("/admin/addtrain", (req,res) =>{
-    pool.query(
-        `select distinct departure from fares`,
-        (err,results)=>{
-            if(err){
-                throw err;
-            }
-            
-            const resultsArray = Array.from(results.rows);
-            res.render('admin/addtrain',{results: resultsArray});
-        }
-    );
-})
+});
 
 
 
@@ -507,6 +467,37 @@ app.get("/admin/addtrain", (req,res) =>{
 
 
 // Admin Post Methods
+app.post("/admin/addbranch", (req,res) =>{
+    let {branch}=req.body;
+    pool.query(
+        `select * from branches where branchname=$1`,[branch],
+        (err,results)=>{
+            if(err){
+                throw err;
+            }
+            else if(results.rows.length>0){
+                let error=[];
+                error.push({message:"This branch already exists."});
+                res.render('admin/addbranch',{error});
+            }
+            else{
+                pool.query(
+                    `insert into branches (branchname) values($1)`,[branch],
+                    (err,results)=>{
+                        if(err){
+                            throw err;
+                        }
+                        else{
+                            let no_err=[];
+                            no_err.push({message:"Branch Inserted successfully."});   
+                            res.render('admin/addbranch',{no_err});
+                        }
+                    }
+                );
+            }
+        }
+    );
+})
 app.post("/admin/adddeliveryman",async (req,res) =>{
 
     let {name,dtype,hidden_dtype,branch,hidden_branch,phone} = req.body;
@@ -592,19 +583,39 @@ app.post("/admin/addtopping",async (req,res) =>{
 })
 app.post("/admin/adminsignup",async (req,res) =>{
 
-    let {masterkey,adminname,adminnid,adminemail,adminphone,adminpassword,cadminpassword} = req.body;
+    let {masterkey,adminname,branchid,adminemail,adminphone,adminpassword,cadminpassword} = req.body;
 
-    console.log(masterkey,adminname,adminnid,adminemail,adminphone,adminpassword,cadminpassword);
+    console.log(masterkey,adminname,branchid,adminemail,adminphone,adminpassword,cadminpassword);
     
     let error=[];
 
     if(adminpassword!=cadminpassword){
         error.push({message: "Passwords do not match"});
-        res.render('admin/adminsignup',{error});
+        pool.query(
+            `select * from branches`,
+            (err,results)=>{
+                if(err){
+                    throw err;
+                }
+                
+                const resultsArray = Array.from(results.rows);
+                res.render('admin/adminsignup',{results: resultsArray,error});
+            }
+        );
     }
     else if(masterkey!="1234"){
         error.push({message: "Incorrect masterkey.Please contact authority"});
-        res.render('admin/adminsignup',{error});
+        pool.query(
+            `select * from branches`,
+            (err,results)=>{
+                if(err){
+                    throw err;
+                }
+                
+                const resultsArray = Array.from(results.rows);
+                res.render('admin/adminsignup',{results: resultsArray,error});
+            }
+        );
     }
     else{
         const adminotp = Math.floor(1000 + Math.random() * 9000);
@@ -620,13 +631,23 @@ app.post("/admin/adminsignup",async (req,res) =>{
 
                 if(results.rows.length>0){
                     error.push({message: "Email already exists"});
-                    res.render("admin/adminsignup",{error});
+                    pool.query(
+                        `select * from branches`,
+                        (err,results)=>{
+                            if(err){
+                                throw err;
+                            }
+                            
+                            const resultsArray = Array.from(results.rows);
+                            res.render('admin/adminsignup',{results: resultsArray,error});
+                        }
+                    );
                 }
                 else{
                     let message="Your otp varification code is ";
                     let subject="Verify your account";
                     sendMail(adminemail,adminotp,subject,message);
-                    res.render('admin/adminregister',{adminname,adminnid,adminemail,adminphone,adminpassword,adminotp});
+                    res.render('admin/adminregister',{adminname,branchid,adminemail,adminphone,adminpassword,adminotp});
                 }
             }
         );
@@ -634,7 +655,7 @@ app.post("/admin/adminsignup",async (req,res) =>{
 })
 
 app.post("/admin/adminregister",async (req,res) =>{
-    let {adminname,adminnid,adminemail,adminphone,adminpassword,adminotp,adminvarcode} = req.body;
+    let {adminname,branchid,adminemail,adminphone,adminpassword,adminotp,adminvarcode} = req.body;
     let error=[];
     if(adminotp!=adminvarcode){
         error.push({message:"Invalid varification code"});
@@ -644,10 +665,10 @@ app.post("/admin/adminregister",async (req,res) =>{
         let hash=await bcrypt.hash(adminpassword,10);
         console.log(hash);
         pool.query(
-            `INSERT INTO admins (adminname,adminnid,adminemail,adminphone,adminpassword)
+            `INSERT INTO admins (adminname,branchid,adminemail,adminphone,adminpassword)
                 VALUES ($1, $2, $3, $4, $5)
-                RETURNING adminname,adminnid,adminemail,adminphone,adminpassword`,
-            [adminname,adminnid,adminemail,adminphone,hash],
+                RETURNING adminname,branchid,adminemail,adminphone,adminpassword`,
+            [adminname,branchid,adminemail,adminphone,hash],
             (err, results) => {
             if (err) {
                 throw err;
@@ -689,8 +710,26 @@ app.post("/admin/adminlogin",async (req,res) =>{
                 console.log(err);
               }
               if (isMatch) {
-                req.session.admin=results;
-                res.render("admin/admindashboard");
+                pool.query(
+                    `select * from branches`,
+                    (err,results)=>{
+                        if(err){
+                            throw err;
+                        }
+                        const resultsArray = Array.from(results.rows);
+                        pool.query(
+                            `select * from ordertype`,
+                            (err,result)=>{
+                                if(err){
+                                    throw err;
+                                }
+                                
+                                const resultArray = Array.from(result.rows);
+                                res.render('admin/admindashboard',{results: resultsArray,result: resultArray});
+                            }
+                        );
+                    }
+                );
               } 
               else {
                 //password is incorrect
