@@ -43,8 +43,17 @@
             </div>
             
             <div class="form-group">
-                <label for="branch">Branch</label>
-                <input type="text" class="form-control" id="phone" name="branch" required>
+                <label for="adminname">Branch name</label>
+                <select class="form-control" id="branch" name="branch" required
+                                onchange="updateHiddenValue('branchid')">
+                                <option value="">Choose..</option>
+                                <% for (const row of results) { %>
+                                    <option value="<%= row.branchname %>">
+                                        <%= row.branchname %>
+                                    </option>
+                                    <% } %>
+                            </select>
+                            <input type="hidden" id="hidden_branchid" name="hidden_branchid" />
             </div>
 
             <div class="form-group">
@@ -62,6 +71,12 @@
         <a class="btn btn-success" href="/admin/adminsignup"><h7>Sign up as admin</h7></a>
 
     </div>
+    <script>
+        function updateHiddenValue(elementId) {
+            const selectedOption = document.getElementById(elementId).value;
+            document.getElementById(`hidden_${elementId}`).value = selectedOption;
+        }
+    </script>
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
