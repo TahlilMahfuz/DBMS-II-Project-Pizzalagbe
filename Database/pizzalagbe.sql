@@ -1,4 +1,22 @@
 ﻿DROP TABLE IF EXISTS admins;
+DROP TABLE IF EXISTS orderpizzatopping;
+DROP TABLE IF EXISTS orders;
+DROP TABLE IF EXISTS pizzas;
+DROP TABLE IF EXISTS toppings;
+DROP TABLE IF EXISTS customers;
+DROP TABLE IF EXISTS deliveryman;
+DROP TABLE IF EXISTS ordertype;
+DROP TABLE IF EXISTS branches;
+
+
+
+CREATE TABLE branches (
+    branchid SERIAL PRIMARY KEY,
+    branchname VARCHAR(20)
+);
+INSERT INTO branches (branchname)
+                        VALUES ('dhaka'); --1
+
 create table admins(
     adminid serial primary key,
     branchid int,
@@ -8,22 +26,6 @@ create table admins(
     adminpassword varchar(300),
     reg_date date not null default current_timestamp,
     foreign key (branchid) references branches(branchid)
-);
-
-DROP TABLE IF EXISTS orderpizzatopping;
-DROP TABLE IF EXISTS orders;
-DROP TABLE IF EXISTS pizzas;
-DROP TABLE IF EXISTS toppings;
-DROP TABLE IF EXISTS customers;
-DROP TABLE IF EXISTS deliveryman;
-DROP TABLE IF EXISTS branches;
-DROP TABLE IF EXISTS ordertype;
-
-
-
-CREATE TABLE branches (
-    branchid SERIAL PRIMARY KEY,
-    branchname VARCHAR(20)
 );
 
 CREATE TABLE customers (
@@ -44,12 +46,13 @@ CREATE TABLE ordertype (
 );
 
 CREATE TABLE deliveryman (
-    deliverymanid SERIAL PRIMARY KEY,
+    deliverymanid varchar(20) primary key,
     typeid INT,
     name VARCHAR(20),
     branchid INT,
     avaiability INT default 1,
-    password varchar(512),
+    password varchar(512) default '123',
+    phone varchar(20),
     CONSTRAINT fk_deliveryman_typeid FOREIGN KEY (typeid)
         REFERENCES ordertype (typeid),
     CONSTRAINT fk_deliveryman_branchid FOREIGN KEY (branchid)
@@ -59,7 +62,7 @@ CREATE TABLE deliveryman (
 CREATE TABLE orders (
     orderid SERIAL PRIMARY KEY,
     customerid INT,
-    deliverymanid INT,
+    deliverymanid varchar(20),
     typeid INT,
     total DOUBLE PRECISION,
     datetime TIMESTAMP,

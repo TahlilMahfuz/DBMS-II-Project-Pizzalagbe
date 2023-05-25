@@ -173,222 +173,7 @@ app.post("/user/userlogin",passport.authenticate("local",{
     failureFlash:true
 }));
 
-app.post("/user/bookticket",async (req,res) =>{
 
-    let {from,to,journeydate} = req.body;
-
-    console.log(from,to,journeydate);
-
-    let arr=[];
-    arr['username']=req.session.user.username;
-
-    pool.query(
-        `SELECT * FROM trains natural join fares 
-        WHERE departure = $1 AND destination = $2 AND departuredate = $3 and seats>0`,
-        [from, to, journeydate],
-        (err, results) => {
-          if (err) {
-            throw err;
-          }
-          console.log("database connected");
-          console.log(results.rows);
-      
-          if (results.rows.length > 0) {
-            console.log(results.rows.length);
-            req.session.traininfo=results;
-            res.render("user/bookticket", {results,arr});
-          } 
-          else {
-            let error = [];
-            pool.query(
-                `select distinct departure from fares`,
-                (err,results)=>{
-                    if(err){
-                        throw err;
-                    }
-                    console.log(results);
-                    const resultsArray = Array.from(results.rows);
-                    
-                    error.push({ message: "Sorry, no trains available" });
-                    res.render('user/dashboard',{results: resultsArray,arr,error});
-                }
-            );
-          }
-        }
-    );
-})
-
-app.post("/user/confirmbook",async (req,res) =>{
-
-    let {trainid} = req.body;
-    console.log("trainID: ");
-
-    console.log(trainid);
-
-    let uid=req.session.user.userid;
-
-    pool.query(
-    `INSERT INTO reservation (trainid, userid)
-    VALUES ($1, $2)
-    RETURNING reservationid`,
-    [trainid, uid],
-    async (err, results) => {
-            if (err) {
-                throw err;
-            }
-            
-            
-            const reservationId = results.rows[0].reservationid;
-            console.log("RID: "+reservationId);
-            
-            //Generate QR code
-            let stjson=JSON.stringify(reservationId);
-            qr.toFile("./public/img/qr.png",stjson,{
-                width: 200,
-                height: 200
-            },function(err){
-                if(err)
-                throw err;
-            });
-            qr.toString(stjson,{type:"terminal"},function (err,code) {
-                if(err){
-                    throw err;
-                }
-                else{
-                    console.log(code);
-                    pool.query(
-                        `update reservation
-                        set qr_code=$1
-                        where reservationid=$2
-                        RETURNING reservationid`,
-                        [code,reservationId],
-                        async (err, results) => {
-                            if (err) {
-                                throw err;
-                            }
-                            else{
-                                console.log("qr_code inserted");
-                            }
-                        }
-                    );
-                }
-             });
-                
-            //Update train table to deduct a seat
-            pool.query(
-                `update trains set seats=seats-1
-                where trainid=$1`,[trainid],
-                (err,results)=>{
-                    if(err){
-                        throw err;
-                    }
-                }
-            );
-
-            //Update User account that deducts the fare of the train
-            let uid=req.session.user.userid;
-            pool.query(
-                `select amount from trains natural join fares where trainid=$1`,[trainid],
-                (err,results)=>{
-                    if(err){
-                        throw err;
-                    }
-                    console.log("Got amount: ");
-                    let fare = results.rows[0].amount;
-                    console.log(fare);
-
-                    pool.query(
-                        `select userbalance from users where userid=$1`,[uid],
-                        (err,results)=>{
-                            if(err){
-                                throw err;
-                            }
-                            let userbalanace=results.rows[0].userbalance;
-                            if(userbalanace<fare){
-                                let error=[];
-                                error.push({message:"Sorry!Not enough account balance.Please recharge your account."});
-                                pool.query(
-                                    `select distinct departure from fares`,
-                                    (err,results)=>{
-                                        if(err){
-                                            throw err;
-                                        }
-                                        console.log(results);
-                                        const resultsArray = Array.from(results.rows);
-                                        res.render('user/dashboard',{results: resultsArray,error});
-                                    }
-                                );
-                            } 
-                            else{
-                                pool.query(
-                                    `update users set userbalance=userbalance-$1 where userid=$2`,[fare,uid],
-                                    (err,results)=>{
-                                        if(err){
-                                            throw err;
-                                        }
-                                        console.log("User update completed");
-                                    }
-                                );
-                                console.log("User update completed");
-                            }
-                        }
-                    );
-                }
-            );
-
-            let no_err=[];
-
-            pool.query(
-                `SELECT *
-                FROM reservation natural join trains natural join users
-                WHERE userid =$1 and avaiability=1
-                order by reserve_time desc`,[uid],
-                (err,results)=>{
-                    if(err){
-                        throw err;
-                    }
-                    console.log("database connected");
-                    console.log(results.rows);
-
-                    if(results.rows.length>0){
-                        no_err.push({message:"Ticket Confirmed."});
-                        res.render("user/tickethistory",{results});
-                    }
-                    else{
-                        no_err.push({message:"Sorry you have no previous tickets"});
-                        res.render("user/dashboard",{no_err});
-                    }
-                }
-            );
-        }
-    );
-})
-app.post("/user/showqr",(req,res) =>{
-    let {reservationid}=req.body;
-    let stjson=JSON.stringify(reservationid);
-    qr.toFile("./public/img/qr.png",stjson,{
-        width: 500,
-        height: 500
-    },function(err){
-        if(err)
-            throw err;
-    });
-    pool.query(
-        `SELECT *
-        FROM reservation natural join trains natural join users
-        WHERE reservationid =$1 and avaiability=1
-        order by reserve_time desc`,[reservationid],
-        (err,results)=>{
-            if(err){
-                throw err;
-            }
-            else{  
-                res.render('user/showqr',{results});
-            }
-        }
-    );
-    
-})
 
 
 
@@ -407,6 +192,9 @@ app.post("/user/showqr",(req,res) =>{
 //Admin Get Methods
 app.get("/admin/adminlogin",checkAuthenticated,(req,res) =>{
     res.render('admin/adminlogin');
+})
+app.get("/admin/addordertype",checkAuthenticated,(req,res) =>{
+    res.render('admin/addordertype');
 })
 
 app.get("/admin/adminsignup", (req,res) =>{
@@ -469,6 +257,7 @@ app.get("/admin/addbranch", (req,res) =>{
 // Admin Post Methods
 app.post("/admin/addbranch", (req,res) =>{
     let {branch}=req.body;
+    console.log("The branch name is : "+branch);
     pool.query(
         `select * from branches where branchname=$1`,[branch],
         (err,results)=>{
@@ -498,6 +287,37 @@ app.post("/admin/addbranch", (req,res) =>{
         }
     );
 })
+app.post("/admin/addordertype", (req,res) =>{
+    let {ordertype}=req.body;
+    pool.query(
+        `select * from ordertype where type=$1`,[ordertype],
+        (err,results)=>{
+            if(err){
+                throw err;
+            }
+            else if(results.rows.length>0){
+                let error=[];
+                error.push({message:"This type already exists."});
+                res.render('admin/addordertype',{error});
+            }
+            else{
+                pool.query(
+                    `insert into ordertype (type) values($1)`,[ordertype],
+                    (err,results)=>{
+                        if(err){
+                            throw err;
+                        }
+                        else{
+                            let no_err=[];
+                            no_err.push({message:"Ordetype Inserted successfully."});   
+                            res.render('admin/addordertype',{no_err});
+                        }
+                    }
+                );
+            }
+        }
+    );
+})
 app.post("/admin/adddeliveryman",async (req,res) =>{
 
     let {name,dtype,hidden_dtype,branch,hidden_branch,phone} = req.body;
@@ -505,8 +325,8 @@ app.post("/admin/adddeliveryman",async (req,res) =>{
     console.log(name,dtype,branch,phone);
 
     pool.query(
-        `insert into deliveryman (typeid, name, branchid) 
-        values($1,$2,$3) returning deliverymanid,name,typeid,branchid,avaiability;`,[dtype,name,branch],
+        `Insert into deliveryman (typeid,name,branchid,phone)
+        values ($1,$2,$3,$4) returning deliverymanid,typeid,name,branchid,avaiability,phone`,[dtype,name,branch,phone],
         (err,results)=>{
             if(err){
                 throw err;
@@ -529,7 +349,7 @@ app.post("/admin/adddeliveryman",async (req,res) =>{
                                 }
                                 
                                 const resultArray = Array.from(result.rows);
-                                res.render('admin/admindashboard',{results: resultsArray,result: resultArray});
+                                res.render('admin/admindashboard',{results: resultsArray,result: resultArray,no_err});
                             }
                         );
                     }
