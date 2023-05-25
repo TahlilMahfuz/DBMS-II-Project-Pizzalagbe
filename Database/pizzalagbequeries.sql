@@ -4,6 +4,7 @@ select * from ordertype;
 select * from deliveryman;
 select * from branches where branchname='dhaka';
 select * from customers;
+select * from toppings;
 select * from customers where customeremail=$1
 INSERT INTO customers (firstname,lastname,customeremail,customerphone,customerpassword,branchid)
                     VALUES ($1, $2, $3, $4, $5,$6)

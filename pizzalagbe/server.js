@@ -60,7 +60,17 @@ app.get("/user/userlogin",checkAuthenticated,(req,res) =>{
 })
 
 app.get("/user/usersignup", (req,res) =>{
-    res.render('user/usersignup');
+    pool.query(
+        `select * from branches`,
+        (err,results)=>{
+            if(err){
+                throw err;
+            }
+            
+            const resultsArray = Array.from(results.rows);
+            res.render('user/usersignup',{results:resultsArray});
+        }
+    );
 })
 
 app.get("/userlogout", (req, res) => {
@@ -70,7 +80,56 @@ app.get("/userlogout", (req, res) => {
       res.redirect("/user/userlogin");
     });
 });
-
+app.get("/user/orderpizza", (req,res) =>{
+    pool.query(
+        `select * from pizzas`,
+        (err,results)=>{
+            if(err){
+                throw err;
+            }
+            else{
+                pool.query(
+                    `select * from toppings`,
+                    (err,result)=>{
+                        if(err){
+                            throw err;
+                        }
+                        else{
+                            pool.query(
+                                `select * from ordertype`,
+                                (err,resul)=>{
+                                    if(err){
+                                        throw err;
+                                    }
+                                    
+                                    pool.query(
+                                        `select * from branches`,
+                                        (err,resu)=>{
+                                            if(err){
+                                                throw err;
+                                            }
+                                            
+                                            const resultsArray = Array.from(results.rows);
+                                            const resultArray = Array.from(result.rows);
+                                            const resulArray = Array.from(resul.rows);
+                                            const resuArray = Array.from(resu.rows);
+                                            res.render('user/orderpizza',{resu:resuArray,resul:resulArray,result:resultArray,results:resultsArray});
+                                        }
+                                    );
+                                }
+                            );
+                        }
+                    }
+                );
+            }
+        }
+    );
+})
+app.post("/user/orderpizza", (req,res) =>{
+    let {pizzas,toppings,ordertype,branch}=req.body;
+    console.log(pizzas,toppings,ordertype,branch);
+    
+})
 
 
 

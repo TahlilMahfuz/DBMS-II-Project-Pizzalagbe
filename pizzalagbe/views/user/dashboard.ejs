@@ -17,13 +17,9 @@
     <%-include('../partials/navlogged') %>
 
     <div class="container my-4">
-        <%if(typeof arr != 'undefined'){
-            %>
-                <h1 class="text-center">Welcome MR/MRs <%=arr['username']%>.</h1>
-            <%
-        }%>
         <div class="text-center">
             <h1>This is the dashboard.Order from here.</h1>
+           <a class="btn btn-success" href="/user/orderpizza"><h7>Order Pizza</h7></a>
         </div>
 
     
