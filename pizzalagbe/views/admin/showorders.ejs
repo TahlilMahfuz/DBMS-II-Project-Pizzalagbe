@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Show Orders</title>
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .custom-container {
+            max-width: 2000px; /* Set the desired width in pixels or any other valid CSS unit */
+        }
+    </style>
+</head>
+<body>
+    <%-include('../partials/navadmin') %>
+    <div class="container custom-container">
+        <div class="text-center">
+            <h1 class="mt-5">Show Orders</h1><br><br>
+        </div>
+        <div class="table-responsive table-responsive-xxl">
+            <table class="table table-bordered table-lg">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer ID</th>
+                        <th>Customer Name</th>
+                        <th>Customer Phone</th>
+                        <th>Order Type</th>
+                        <th>Total</th>
+                        <th>Date & Time</th>
+                        <th>Branch Name</th>
+                        <th>Address</th>
+                        <th>Ready</th>
+                        <th>Delete</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% for (let i = 0; i < results.length; i++) { %>
+                        <tr>
+                            <td><%= results[i].orderid %></td>
+                            <td><%= results[i].customerid %></td>
+                            <td><%= results[i].firstname %> <%= results[i].lastname %></td>
+                            <td><%= results[i].customerphone %></td>
+                            <td><%= results[i].type %></td>
+                            <td><%= results[i].total %></td>
+                            <td><%= results[i].datetime %></td>
+                            <td><%= results[i].branchname %></td>
+                            <td><%= results[i].address %></td>
+                            <td>
+                                <form action="/admin/ready" method="POST">
+                                    <input type="hidden" id="orderid" name="orderid" value="<%= results[i].orderid %>">
+                                    <button type="submit" class="btn btn-success">Ready</button>
+                                </form>
+                            </td>
+                            <td>
+                                <form action="/admin/delete" method="POST">
+                                    <input type="hidden" name="orderid" id="orderid" value="<%= results[i].orderid %>">
+                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Include Bootstrap JS and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.min.js"></script>
+</body>
+</html>

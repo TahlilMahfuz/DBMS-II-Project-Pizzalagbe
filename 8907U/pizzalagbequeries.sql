@@ -34,13 +34,14 @@ Insert into deliveryman (typeid,name,branchid,phone)
 
 select * from branches natural join ordertype;
 
-
-
+select *
+from orders natural join orderpizzatopping natural join customers natural join ordertype natural join branches
+where status=0;
 
 
 
 -- Funtions and procedures
-
+/*************************************************/
 -- generate delivery man id
 CREATE OR REPLACE FUNCTION generate_deliveryman_id
     (deliveryman_name VARCHAR,phone_number VARCHAR,branch int,type int)
@@ -113,4 +114,60 @@ $$
 
 
 
+
+
+
+
+/***************************************************************/
+-- Place order
+CREATE OR REPLACE PROCEDURE place_order(
+    pizza_id INT,
+    topping_id INT,
+    branch_id INT,
+    type_id INT,
+    address VARCHAR(100),
+    userid INT
+)
+AS $$
+DECLARE
+    total_price DOUBLE PRECISION := 0;
+    pizza_price DOUBLE PRECISION;
+    topping_price DOUBLE PRECISION;
+    order_id INT;
+BEGIN
+    SELECT price INTO pizza_price
+    FROM pizzas
+    WHERE pizzaid = pizza_id;
+
+    SELECT price INTO topping_price
+    FROM toppings
+    WHERE toppingid = topping_id;
+
+    total_price := pizza_price + topping_price;
+
+    -- Insert into orders table
+    INSERT INTO orders (customerid, typeid, total, datetime, address, branchid, status)
+    VALUES (userid, type_id, total_price, NOW(), address, branch_id, 0)
+    RETURNING orderid INTO order_id;
+
+    -- Insert into orderpizzatopping table
+    INSERT INTO orderpizzatopping (orderid, pizzaid, toppingid)
+    VALUES (order_id, pizza_id, topping_id);
+END
+$$ LANGUAGE plpgsql;
+
+
+-- testing
+DO $$
+BEGIN
+    -- Call the place_order procedure with the desired parameter values
+    CALL place_order(1, 1, 1, 1, 'Amar Basha', 1);
+END $$;
+
+select * from orders;
+select * from orderpizzatopping;
+
+
+
+/*************************************************************************/
 

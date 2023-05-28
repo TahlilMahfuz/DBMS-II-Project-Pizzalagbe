@@ -125,10 +125,19 @@ app.get("/user/orderpizza", (req,res) =>{
         }
     );
 })
-app.post("/user/orderpizza", (req,res) =>{
-    let {pizzas,toppings,ordertype,branch}=req.body;
-    console.log(pizzas,toppings,ordertype,branch);
-    
+app.get("/user/cart", (req,res) =>{
+    let userid=req.session.user.customerid;
+    pool.query(
+        `select * from orders natural join orderpizzatoppings where customerid=$1`,[userid],
+        (err,results)=>{
+            if(err){
+                throw err;
+            }
+            
+            const resultsArray = Array.from(results.rows);
+            res.render('user/usersignup',{results:resultsArray});
+        }
+    );
 })
 
 
@@ -142,8 +151,35 @@ app.post("/user/orderpizza", (req,res) =>{
 
 
 
-//POST METHODS
 
+
+
+
+
+
+//POST METHODS
+app.post("/user/orderpizza", (req, res) => {
+    let userid = req.session.user.customerid;
+    let { pizzas, toppings, ordertype, branch, address } = req.body;
+    console.log(pizzas, toppings, branch, ordertype, address,userid);
+
+
+    pool.query(
+        'CALL place_order($1, $2, $3, $4, $5, $6)',
+        [pizzas, toppings, branch, ordertype, address, userid],
+        (err, results) => {
+            if (err) {
+                throw err;
+            }
+            else{
+                let no_err=[];
+                no_err.push({message:"Order has been placed and added to cart."});
+                res.render('user/dashboard',{no_err});
+            }
+
+        }
+    );
+});
 app.post("/user/usersignup",async (req,res) =>{
 
     let {firstname,lastname,useremail,userphone,userpassword,cuserpassword,branch} = req.body;
@@ -300,6 +336,21 @@ app.get("/admin/addtopping", (req,res) =>{
 app.get("/admin/addbranch", (req,res) =>{
     res.render('admin/addbranch');
 });
+app.get("/admin/showorders", (req,res) =>{
+    pool.query(
+        `select *
+        from orders natural join orderpizzatopping natural join customers natural join ordertype natural join branches
+        where status=0`,
+        (err,results)=>{
+            if(err){
+                throw err;
+            }
+            
+            const resultsArray = Array.from(results.rows);
+            res.render('admin/showorders',{results: resultsArray});
+        }
+    );
+});
 
 
 
@@ -314,6 +365,62 @@ app.get("/admin/addbranch", (req,res) =>{
 
 
 // Admin Post Methods
+app.post("/admin/ready", (req,res) =>{
+    let {orderid}=req.body;
+    console.log("The orderid name is : "+orderid);
+    pool.query(
+        `update orders set status=status+1 where orderid=$1`,[orderid],
+        (err,results)=>{
+            if(err){
+                throw err;
+            }
+            else{
+                pool.query(
+                    `select *
+                    from orders natural join orderpizzatopping natural join customers natural join ordertype natural join branches
+                    where status=0`,
+                    (err,results)=>{
+                        if(err){
+                            throw err;
+                        }
+                        let no_err=[];
+                        no_err.push({message:"Order is ready and added to the delivery section."});
+                        const resultsArray = Array.from(results.rows);
+                        res.render('admin/showorders',{results: resultsArray,no_err});
+                    }
+                );
+            }
+        }
+    );
+})
+app.post("/admin/delete", (req,res) =>{
+    let {orderid}=req.body;
+    console.log("The orderid name is : "+orderid);
+    pool.query(
+        `update orders set status=5 where orderid=$1`,[orderid],
+        (err,results)=>{
+            if(err){
+                throw err;
+            }
+            else{
+                pool.query(
+                    `select *
+                    from orders natural join orderpizzatopping natural join customers natural join ordertype natural join branches
+                    where status=0`,
+                    (err,results)=>{
+                        if(err){
+                            throw err;
+                        }
+                        let error=[];
+                        error.push({message:"Order has been deleted"});
+                        const resultsArray = Array.from(results.rows);
+                        res.render('admin/showorders',{results: resultsArray,error});
+                    }
+                );
+            }
+        }
+    );
+})
 app.post("/admin/addbranch", (req,res) =>{
     let {branch}=req.body;
     console.log("The branch name is : "+branch);
