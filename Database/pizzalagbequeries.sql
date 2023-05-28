@@ -1,3 +1,4 @@
+-- change delivery man id generator to make it unique
 -- Queries
 select * from branches;
 select * from ordertype;
@@ -5,7 +6,7 @@ select * from deliveryman;
 select * from branches where branchname='dhaka';
 select * from customers;
 select * from toppings;
-select * from customers where customeremail=$1
+select * from customers where customeremail=$1;
 INSERT INTO customers (firstname,lastname,customeremail,customerphone,customerpassword,branchid)
                     VALUES ($1, $2, $3, $4, $5,$6)
                     RETURNING firstname,lastname,customeremail,customerphone,customerpassword,branchid;
@@ -38,6 +39,17 @@ from orders natural join orderpizzatopping natural join customers natural join o
 where status=0 and branchid=1;
 
 select * from orders natural join ordertype natural join customers where status=1 and typeid=1;
+
+
+update orders set status=status-1, deliverymanid=null where orderid=1;
+
+select * from orders;
+
+
+
+
+
+
 
 -- Funtions and procedures
 /*************************************************/
