@@ -603,6 +603,20 @@ app.get("/admin/showorders", (req,res) =>{
         }
     );
 });
+app.get("/admin/yettodeliver", (req,res) =>{
+    pool.query(
+        `select *
+        from orders natural join orderpizzatopping natural join customers natural join ordertype natural join branches natural join admins
+        where status=1 and branchid=$1 and typeid=2`,[req.session.admin.branchid],
+        (err,results)=>{
+            if(err){
+                throw err;
+            }
+            const resultsArray = Array.from(results.rows);
+            res.render('admin/yettodeliver',{results: resultsArray});
+        }
+    );
+});
 
 
 
@@ -629,6 +643,34 @@ app.get("/admin/showorders", (req,res) =>{
 
 
 // Admin Post Methods
+app.post("/admin/delivered", (req,res) =>{
+    let {orderid}=req.body;
+    console.log("The orderid name is : "+orderid);
+    pool.query(
+        `update orders set status=status+2 where orderid=$1`,[orderid],
+        (err,results)=>{
+            if(err){
+                throw err;
+            }
+            else{
+                pool.query(
+                    `select *
+                    from orders natural join orderpizzatopping natural join customers natural join ordertype natural join branches
+                    where status=0`,
+                    (err,results)=>{
+                        if(err){
+                            throw err;
+                        }
+                        let no_err=[];
+                        no_err.push({message:"Payment has been taken and pizza delivered to the customer"});
+                        const resultsArray = Array.from(results.rows);
+                        res.render('admin/showorders',{results: resultsArray,no_err});
+                    }
+                );
+            }
+        }
+    );
+})
 app.post("/admin/ready", (req,res) =>{
     let {orderid}=req.body;
     console.log("The orderid name is : "+orderid);
