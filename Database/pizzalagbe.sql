@@ -17,8 +17,6 @@ CREATE TABLE branches (
 INSERT INTO branches (branchname)
                         VALUES ('dhaka'); --1
 
-
-
 create table admins(
     adminid serial primary key,
     branchid int,

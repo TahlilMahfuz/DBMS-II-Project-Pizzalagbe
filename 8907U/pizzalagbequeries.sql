@@ -35,8 +35,8 @@ Insert into deliveryman (typeid,name,branchid,phone)
 select * from branches natural join ordertype;
 
 select *
-from orders natural join orderpizzatopping natural join customers natural join ordertype natural join branches
-where status=0;
+from orders natural join orderpizzatopping natural join customers natural join ordertype natural join branches natural join admins
+where status=0 and branchid=1;
 
 
 

@@ -43,7 +43,31 @@ app.use(express.static('public'));
 
 //GET METHODS
 app.get("/",checkIndexAuthenticated,(req,res) =>{
-    res.render('index');
+    if(req.session.admin){
+        pool.query(
+            `select * from branches`,
+            (err,results)=>{
+                if(err){
+                    throw err;
+                }
+                const resultsArray = Array.from(results.rows);
+                pool.query(
+                    `select * from ordertype`,
+                    (err,result)=>{
+                        if(err){
+                            throw err;
+                        }
+                        
+                        const resultArray = Array.from(result.rows);
+                        res.render('admin/admindashboard',{results: resultsArray,result: resultArray});
+                    }
+                );
+            }
+        );
+    }
+    else{
+        res.render('index');
+    }
 })
 
 app.get("/user/dashboard",(req,res) =>{
@@ -337,15 +361,15 @@ app.get("/admin/addbranch", (req,res) =>{
     res.render('admin/addbranch');
 });
 app.get("/admin/showorders", (req,res) =>{
+    console.log(req.session.admin);
     pool.query(
         `select *
-        from orders natural join orderpizzatopping natural join customers natural join ordertype natural join branches
-        where status=0`,
+        from orders natural join orderpizzatopping natural join customers natural join ordertype natural join branches natural join admins
+        where status=0 and branchid=$1`,[req.session.admin.branchid],
         (err,results)=>{
             if(err){
                 throw err;
             }
-            
             const resultsArray = Array.from(results.rows);
             res.render('admin/showorders',{results: resultsArray});
         }
@@ -673,67 +697,65 @@ app.post("/admin/adminregister",async (req,res) =>{
 
 
 
-app.post("/admin/adminlogin",async (req,res) =>{
-    let {adminemail,adminpassword} = req.body;
-    console.log("admin email: "+adminemail);
-    console.log("admin password: "+adminpassword);
-
-    let error=[];
+app.post("/admin/adminlogin", async (req, res) => {
+    let { adminemail, adminpassword } = req.body;
+    console.log("admin email: " + adminemail);
+    console.log("admin password: " + adminpassword);
+  
+    let error = [];
     pool.query(
-        `select * from admins where adminemail=$1`,
-        [adminemail],
-        (err, results) => {
-          if (err) {
-            throw err;
-          }
-          console.log(results.rows);
-  
-          if (results.rows.length > 0) {
-            const admin = results.rows[0];
-  
-            bcrypt.compare(adminpassword, admin.adminpassword, (err, isMatch) => {
-              if (err) {
-                console.log(err);
-              }
-              if (isMatch) {
-                pool.query(
-                    `select * from branches`,
-                    (err,results)=>{
-                        if(err){
-                            throw err;
-                        }
-                        const resultsArray = Array.from(results.rows);
-                        pool.query(
-                            `select * from ordertype`,
-                            (err,result)=>{
-                                if(err){
-                                    throw err;
-                                }
-                                
-                                const resultArray = Array.from(result.rows);
-                                res.render('admin/admindashboard',{results: resultsArray,result: resultArray});
-                            }
-                        );
-                    }
-                );
-              } 
-              else {
-                //password is incorrect
-                error.push({message:"Incorrect Passowrd"});
-                res.render("admin/adminlogin",{error});
-              }
-            });
-          } 
-          else {
-            // No user
-            console.log("no user");
-            error.push({message:"No admins found with this email"});
-            res.render("admin/adminlogin",{error});
-
-          }
+      `select * from admins where adminemail=$1`,
+      [adminemail],
+      (err, results) => {
+        if (err) {
+          throw err;
         }
-      );
-})
+        console.log(results.rows);
+  
+        if (results.rows.length > 0) {
+          const admin = results.rows[0];
+  
+          bcrypt.compare(adminpassword, admin.adminpassword, (err, isMatch) => {
+            if (err) {
+              console.log(err);
+            }
+            if (isMatch) {
+              pool.query(
+                `select * from branches`,
+                (err, results) => {
+                  if (err) {
+                    throw err;
+                  }
+                  const resultsArray = Array.from(results.rows);
+                  pool.query(
+                    `select * from ordertype`,
+                    (err, result) => {
+                      if (err) {
+                        throw err;
+                      }
+  
+                      const resultArray = Array.from(result.rows);
+                      req.session.admin = admin; // Save admin data in session
+                      res.render('admin/admindashboard', { results: resultsArray, result: resultArray });
+                    }
+                  );
+                }
+              );
+            } else {
+              // Password is incorrect
+              error.push({ message: "Incorrect Password" });
+              res.render("admin/adminlogin", { error });
+            }
+          });
+        } else {
+          // No user
+          console.log("no user");
+          error.push({ message: "No admins found with this email" });
+          res.render("admin/adminlogin", { error });
+        }
+      }
+    );
+  });
 
 
 
