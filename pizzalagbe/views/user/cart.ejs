@@ -11,7 +11,7 @@
     </style>
 </head>
 <body>
-    <%- include('../partials/navadmin') %>
+    <%- include('../partials/navlogged') %>
     <div class="container custom-container">
         <div class="text-center">
             <h1 class="mt-5">Show Orders</h1><br><br>
@@ -23,7 +23,6 @@
                         <th>Order ID</th>
                         <th>Customer ID</th>
                         <th>Customer Name</th>
-                        <th>Delivery Man Name</th>
                         <th>Type Name</th>
                         <th>Total</th>
                         <th>Date and Time</th>
@@ -38,7 +37,6 @@
                             <td><%= result.orderid %></td>
                             <td><%= result.customerid %></td>
                             <td><%= result.firstname %> <%= result.lastname %></td>
-                            <td><%= result.name %></td>
                             <td><%= result.type %></td>
                             <td><%= result.total %></td>
                             <td><%= result.datetime %></td>

@@ -205,6 +205,35 @@ app.get("/deliveryman/deliverymanlogin", (req, res) => {
 
 
 // Delivery Man Post Methods
+app.post("/deliveryman/accept", (req, res) => {
+    let { orderid } = req.body;
+    let deliverymanid=req.session.deliveryman.deliverymanid;
+    console.log('The deliveryman id is : '+deliverymanid);
+    console.log('The order id is : '+orderid);
+    pool.query(
+        `update orders set status=status+1, deliverymanid=$1 where orderid=$2`, [deliverymanid,orderid],
+        (err, results) => {
+            if (err) {
+                throw err;
+            } 
+            pool.query(
+                `select * from orders natural join ordertype natural join customers natural join branches where status=1 and typeid=1`,
+                (err, results) => {
+                    if (err) {
+                        throw err;
+                    }
+                    else{
+                        const resultsArray = Array.from(results.rows);
+                        console.log(results);
+                        let no_err=[];
+                        no_err.push({message:'Order added with your account'});
+                        res.render('deliveryman/deliverymandashboard',{results:resultsArray,no_err});
+                    }
+                }
+            );
+        }
+    );
+});
 app.post("/deliveryman/deliverymanlogin", (req, res) => {
     let { deliverymanid, deliverymanpassword } = req.body;
     pool.query(
