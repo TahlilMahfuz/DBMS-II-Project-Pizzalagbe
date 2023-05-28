@@ -45,6 +45,11 @@ CREATE TABLE ordertype (
     type VARCHAR(20)
 );
 
+insert into ordertype (type)
+        values ('Home Delivery'); --1
+insert into ordertype (type)
+        values ('Take away'); --1
+
 CREATE TABLE deliveryman (
     deliverymanid varchar(20) primary key,
     typeid INT,
@@ -68,6 +73,7 @@ CREATE TABLE orders (
     datetime TIMESTAMP,
     address VARCHAR(100),
     branchid int,
+    status smallint,
     CONSTRAINT fk_orders_customerid FOREIGN KEY (customerid)
         REFERENCES customers (customerid),
     CONSTRAINT fk_orders_deliverymanid FOREIGN KEY (deliverymanid)
@@ -77,6 +83,7 @@ CREATE TABLE orders (
     CONSTRAINT fk_orders_typeid FOREIGN KEY (typeid)
         REFERENCES ordertype (typeid)
 );
+
 
 CREATE TABLE pizzas (
     pizzaid serial PRIMARY KEY,
