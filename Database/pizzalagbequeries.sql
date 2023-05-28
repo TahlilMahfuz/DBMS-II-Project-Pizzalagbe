@@ -31,14 +31,13 @@ Insert into deliveryman (typeid,name,branchid,phone)
         values (1,'Mr. Tahlil',1,01782633834) returning deliverymanid,typeid,name,branchid,avaiability,phone;
 
 
-
 select * from branches natural join ordertype;
 
 select *
 from orders natural join orderpizzatopping natural join customers natural join ordertype natural join branches natural join admins
 where status=0 and branchid=1;
 
-
+select * from orders natural join ordertype natural join customers where status=1 and typeid=1;
 
 -- Funtions and procedures
 /*************************************************/
