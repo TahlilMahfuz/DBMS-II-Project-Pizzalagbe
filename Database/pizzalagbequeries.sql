@@ -43,7 +43,11 @@ select * from orders natural join ordertype natural join customers where status=
 
 update orders set status=status-1, deliverymanid=null where orderid=1;
 
-select * from orders;
+select *
+from orders natural join ordertype natural join customers natural join branches
+         where typeid=1 and branchid=1 and status=2;
+
+select * from orders where status>2;
 
 
 
