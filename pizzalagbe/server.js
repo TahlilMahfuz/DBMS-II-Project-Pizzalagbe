@@ -41,7 +41,23 @@ app.use(express.static('public'));
 
 
 
-//GET METHODS
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//CUSTOMER GET METHODS
 app.get("/",checkIndexAuthenticated,(req,res) =>{
     if(req.session.admin){
         pool.query(
@@ -164,7 +180,7 @@ app.get("/user/cart", (req, res) => {
         NATURAL JOIN customers
         NATURAL JOIN ordertype
         NATURAL JOIN branches
-        WHERE customerid = $1 AND status < 4`, [userid],
+        WHERE customerid = $1 AND status <=3`, [userid],
         (err, results) => {
             if (err) {
                 throw err;
@@ -198,6 +214,42 @@ app.get("/user/cart", (req, res) => {
 app.get("/deliveryman/deliverymanlogin", (req, res) => {
     res.render('deliveryman/deliverymanlogin');
 });
+app.get("/deliveryman/enddelivery", (req, res) => {
+    pool.query(
+        `select * from orders natural join ordertype natural join customers natural join branches where status=2 and typeid=1 and branchid=$1`,
+            [req.session.deliveryman.branchid],
+            (err, results) => {
+            if (err) {
+                throw err;
+            }
+            else{
+                const resultsArray = Array.from(results.rows);
+                console.log(results);
+                res.render('deliveryman/enddelivery',{results:resultsArray});
+            }
+
+        }
+    );
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -205,11 +257,42 @@ app.get("/deliveryman/deliverymanlogin", (req, res) => {
 
 
 // Delivery Man Post Methods
+app.post("/deliveryman/delivered", (req, res) => {
+    let { orderid } = req.body;
+    let deliverymanid=req.session.deliveryman.deliverymanid;
+    console.log('The deliveryman id is : '+deliverymanid);
+    console.log('The order id is : '+orderid);
+    console.log('The branch id is : '+req.session.deliveryman.branchid);
+    pool.query(
+        `update orders set status=status+1 where orderid=$1`, [orderid],
+        (err, results) => {
+            if (err) {
+                throw err;
+            } 
+            pool.query(
+                `select * from orders natural join ordertype natural join customers natural join branches where status=1 and typeid=1`,
+                (err, results) => {
+                    if (err) {
+                        throw err;
+                    }
+                    else{
+                        const resultsArray = Array.from(results.rows);
+                        console.log(results);
+                        let no_err=[];
+                        no_err.push({message:'Payment collected and order has been delivered'});
+                        res.render('deliveryman/deliverymandashboard',{results:resultsArray,no_err});
+                    }
+                }
+            );
+        }
+    );
+});
 app.post("/deliveryman/accept", (req, res) => {
     let { orderid } = req.body;
     let deliverymanid=req.session.deliveryman.deliverymanid;
     console.log('The deliveryman id is : '+deliverymanid);
     console.log('The order id is : '+orderid);
+    console.log('The branch id is : '+req.session.deliveryman.branchid);
     pool.query(
         `update orders set status=status+1, deliverymanid=$1 where orderid=$2`, [deliverymanid,orderid],
         (err, results) => {
@@ -248,8 +331,9 @@ app.post("/deliveryman/deliverymanlogin", (req, res) => {
                     const deliveryman=results.rows[0];
                     req.session.deliveryman=deliveryman;
                     pool.query(
-                        `select * from orders natural join ordertype natural join customers natural join branches where status=1 and typeid=1`,
-                        (err, results) => {
+                        `select * from orders natural join ordertype natural join customers natural join branches where status=1 and typeid=1 and branchid=$1`,
+                            [req.session.deliveryman.branchid],
+                            (err, results) => {
                             if (err) {
                                 throw err;
                             }
@@ -314,7 +398,7 @@ app.post("/deliveryman/deliverymanlogin", (req, res) => {
 
 
 
-//POST METHODS
+//CUSTOMER POST METHODS
 app.post("/user/orderpizza", (req, res) => {
     let userid = req.session.user.customerid;
     let { pizzas, toppings, ordertype, branch, address } = req.body;
@@ -441,6 +525,17 @@ app.post("/user/userlogin",passport.authenticate("local",{
 
 
 
+
+
+
+
+
+
+
+
+
+
+
 //Admin Get Methods
 app.get("/admin/adminlogin",checkAuthenticated,(req,res) =>{
     res.render('admin/adminlogin');
@@ -508,6 +603,18 @@ app.get("/admin/showorders", (req,res) =>{
         }
     );
 });
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
