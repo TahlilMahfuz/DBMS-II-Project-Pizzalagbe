@@ -149,20 +149,124 @@ app.get("/user/orderpizza", (req,res) =>{
         }
     );
 })
-app.get("/user/cart", (req,res) =>{
-    let userid=req.session.user.customerid;
+app.get("/user/cart", (req, res) => {
+    let userid = req.session.user.customerid;
     pool.query(
-        `select * from orders natural join orderpizzatoppings where customerid=$1`,[userid],
-        (err,results)=>{
-            if(err){
+        `SELECT *,
+        CASE
+            WHEN status = 0 THEN 'Preparing'
+            WHEN status = 1 THEN 'Ready'
+            WHEN status = 2 THEN 'Deliveryman in progress'
+            WHEN status = 3 THEN 'Delivered'
+        END AS status_text
+        FROM orders
+        NATURAL JOIN orderpizzatopping
+        NATURAL JOIN customers
+        NATURAL JOIN ordertype
+        NATURAL JOIN branches
+        WHERE customerid = $1 AND status < 4`, [userid],
+        (err, results) => {
+            if (err) {
                 throw err;
             }
-            
+
             const resultsArray = Array.from(results.rows);
-            res.render('user/usersignup',{results:resultsArray});
+            res.render('user/cart', { results: resultsArray });
         }
     );
-})
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Delivery Man Get Methods
+app.get("/deliveryman/deliverymanlogin", (req, res) => {
+    res.render('deliveryman/deliverymanlogin');
+});
+
+
+
+
+
+
+// Delivery Man Post Methods
+app.post("/deliveryman/deliverymanlogin", (req, res) => {
+    let { deliverymanid, deliverymanpassword } = req.body;
+    pool.query(
+        `select * from deliveryman where deliverymanid = $1`, [deliverymanid],
+        (err, results) => {
+            if (err) {
+                throw err;
+            } else if (results.rows.length > 0) {
+                console.log('The password is'+deliverymanpassword);
+                console.log('The database password is'+results.rows[0].password);
+                if (deliverymanpassword === results.rows[0].password) {
+                    const deliveryman=results.rows[0];
+                    req.session.deliveryman=deliveryman;
+                    pool.query(
+                        `select * from orders natural join ordertype natural join customers natural join branches where status=1 and typeid=1`,
+                        (err, results) => {
+                            if (err) {
+                                throw err;
+                            }
+                            else{
+                                const resultsArray = Array.from(results.rows);
+                                console.log(results);
+                                res.render('deliveryman/deliverymandashboard',{results:resultsArray});
+                            }
+                
+                        }
+                    );
+                } 
+                else {
+                    let error = [];
+                    error.push({ message: "Incorrect Password" });
+                    res.render('deliveryman/deliverymanlogin', { error });
+                }
+            } else {
+                let error = [];
+                error.push({ message: "No deliveryman exists with this email." });
+                res.render('deliveryman/deliverymanlogin', { error });
+            }
+        }
+    );
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -694,8 +798,6 @@ app.post("/admin/adminregister",async (req,res) =>{
         );
     }
 })
-
-
 
 app.post("/admin/adminlogin", async (req, res) => {
     let { adminemail, adminpassword } = req.body;

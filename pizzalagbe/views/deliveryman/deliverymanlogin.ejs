@@ -29,26 +29,23 @@
     
 
     <div class="container my-4">
-        <h1 class="text-center">Log in to pizzalagbe</h1>
-        <form action="/user/userlogin" method="post">
+        <h1 class="text-center">Log in to SMetro as deliveryman</h1>
+        <form action="/deliveryman/deliverymanlogin" method="post">
 
             <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" maxlength="50" class="form-control" id="email" name="email"
+                <label for="deliverymanid">Deliveryman ID</label>
+                <input type="deliverymanid" maxlength="50" class="form-control" id="deliverymanid" name="deliverymanid"
                     aria-describedby="emailHelp" required>
             </div>
 
             
             <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" maxlength="23" class="form-control" id="password" name="password" required>
+                <label for="deliverymanpassword">Password</label>
+                <input type="password" maxlength="23" class="form-control" id="deliverymanpassword" name="deliverymanpassword" required>
             </div>
 
             <button type="submit" class="btn btn-primary">Log In</button><br><br>
         </form>
-        <a class="btn btn-success" href="/deliveryman/deliverymanlogin"><h7>Log in as deliveryman</h7></a>
-        <a class="btn btn-success" href="/admin/adminlogin"><h7>Log in as admin</h7></a>
-        <a class="btn btn-success" href="/deliveryman/deliverymanlogin"><h7>Log in as Delivery Man</h7></a>
     </div>
 
     <!-- Optional JavaScript -->
