@@ -50,7 +50,9 @@ from orders natural join ordertype natural join customers natural join branches
 select * from orders where status>2;
 
 
-
+select *
+from orders natural join orderpizzatopping natural join customers natural join ordertype natural join branches natural join admins
+where status=1 and branchid=1 and typeid=2;
 
 
 
