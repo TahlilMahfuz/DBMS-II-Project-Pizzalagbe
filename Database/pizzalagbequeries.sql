@@ -60,6 +60,8 @@ where status=1 and branchid=1 and typeid=2;
 -- Funtions and procedures
 /*************************************************/
 -- generate delivery man id
+CREATE SEQUENCE deliveryman_sequence;
+
 CREATE OR REPLACE FUNCTION generate_deliveryman_id
     (deliveryman_name VARCHAR,phone_number VARCHAR,branch int,type int)
 RETURNS VARCHAR AS $$
@@ -70,6 +72,7 @@ DECLARE
     typeV varchar;
     branchV varchar;
     generated_id VARCHAR;
+    sequence_number INT;
 BEGIN
     id_prefix := LEFT(deliveryman_name, 3);
     RAISE NOTICE 'ID PREFIX: %', id_prefix;
@@ -81,9 +84,13 @@ BEGIN
     RAISE NOTICE 'ID Branch: %', id_branch;
     id_suffix := RIGHT(phone_number, 3);
     RAISE NOTICE 'ID SUFFIX: %', id_suffix;
+
     branchV:=cast(branch as varchar);
     typeV:=cast(type as varchar);
-    generated_id := type ||'-'|| id_prefix ||'-'|| id_branch ||'-'|| id_suffix;
+
+    SELECT nextval('deliveryman_sequence') INTO sequence_number;
+
+    generated_id :=sequence_number || '-' ||  type ||'-'|| id_prefix ||'-'|| id_branch ||'-'|| id_suffix;
     RAISE NOTICE 'GENERATED ID: %', generated_id;
     RETURN generated_id;
 END
