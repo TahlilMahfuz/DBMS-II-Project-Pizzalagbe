@@ -210,6 +210,139 @@ app.get("/user/cart", (req, res) => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+//CUSTOMER POST METHODS
+app.post("/user/orderpizza", (req, res) => {
+    let userid = req.session.user.customerid;
+    let { pizzas, toppings, ordertype, branch, address, quantity } = req.body;
+    console.log(pizzas, toppings, branch, ordertype, address,userid, quantity);
+
+
+    pool.query(
+        'CALL place_order($1, $2, $3, $4, $5, $6, $7)',
+        [pizzas, toppings, branch, ordertype, address, userid,quantity],
+        (err, results) => {
+            if (err) {
+                throw err;
+            }
+            else{
+                let no_err=[];
+                no_err.push({message:"Order has been placed and added to cart."});
+                res.render('user/dashboard',{no_err});
+            }
+
+        }
+    );
+});
+app.post("/user/usersignup",async (req,res) =>{
+
+    let {firstname,lastname,useremail,userphone,userpassword,cuserpassword,branch} = req.body;
+
+    console.log(firstname,lastname,useremail,userphone,userpassword,cuserpassword,branch);
+    
+    let error=[];
+
+    if(userpassword!=cuserpassword){
+        error.push({message: "Passwords do not match"});
+        res.render('user/usersignup',{error});
+    }
+    else{
+        const userotp = Math.floor(1000 + Math.random() * 9000);
+
+        pool.query(
+            `select * from customers where customeremail=$1`,[useremail],
+            (err,results)=>{
+                if(err){
+                    throw err;  
+                }
+                console.log("database connected");
+                console.log(results.rows);
+
+                if(results.rows.length>0){
+                    error.push({message: "Email already exists"});
+                    res.render("user/usersignup",{error});
+                }
+                else{
+                    let message="Your otp varification code is ";
+                    let subject="Verify your account";
+                    sendMail(useremail,userotp,subject,message);
+                    res.render('user/register',{firstname,lastname,useremail,userphone,userpassword,userotp,branch});
+                }
+            }
+        );
+    }
+})
+
+app.post("/user/register",async (req,res) =>{
+    let {firstname,lastname,useremail,userphone,userpassword,userotp,uservarcode} = req.body;
+    let error=[];
+    if(userotp!=uservarcode){
+        error.push({message:"Invalid varification code"});
+        res.render("user/register",{error});
+    }
+    else{
+        let hash=await bcrypt.hash(userpassword,10);
+        console.log(hash);
+        pool.query(
+            `INSERT INTO customers (firstname,lastname,customeremail,customerphone,customerpassword)
+                VALUES ($1, $2, $3, $4, $5)
+                RETURNING firstname,lastname,customeremail,customerphone,customerpassword`,
+            [firstname,lastname,useremail,userphone,hash],
+            (err, results) => {
+            if (err) {
+                throw err;
+            }
+                console.log(results.rows);
+                console.log("Data inserted");
+                req.flash("success_msg", "You are now registered. Please log in");
+
+                let no_err=[];
+                no_err.push({message:"Account created. You can log in now"});
+                res.render("user/userlogin",{no_err});
+            }
+        );
+        
+    }
+})
+
+
+app.post("/user/userlogin",passport.authenticate("local",{
+    successRedirect:"dashboard",
+    failureRedirect:"userlogin",
+    failureFlash:true
+}));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Delivery Man Get Methods
 app.get("/deliveryman/deliverymanlogin", (req, res) => {
     res.render('deliveryman/deliverymanlogin');
@@ -398,116 +531,6 @@ app.post("/deliveryman/deliverymanlogin", (req, res) => {
 
 
 
-//CUSTOMER POST METHODS
-app.post("/user/orderpizza", (req, res) => {
-    let userid = req.session.user.customerid;
-    let { pizzas, toppings, ordertype, branch, address } = req.body;
-    console.log(pizzas, toppings, branch, ordertype, address,userid);
-
-
-    pool.query(
-        'CALL place_order($1, $2, $3, $4, $5, $6)',
-        [pizzas, toppings, branch, ordertype, address, userid],
-        (err, results) => {
-            if (err) {
-                throw err;
-            }
-            else{
-                let no_err=[];
-                no_err.push({message:"Order has been placed and added to cart."});
-                res.render('user/dashboard',{no_err});
-            }
-
-        }
-    );
-});
-app.post("/user/usersignup",async (req,res) =>{
-
-    let {firstname,lastname,useremail,userphone,userpassword,cuserpassword,branch} = req.body;
-
-    console.log(firstname,lastname,useremail,userphone,userpassword,cuserpassword,branch);
-    
-    let error=[];
-
-    if(userpassword!=cuserpassword){
-        error.push({message: "Passwords do not match"});
-        res.render('user/usersignup',{error});
-    }
-    else{
-        const userotp = Math.floor(1000 + Math.random() * 9000);
-
-        pool.query(
-            `select * from customers where customeremail=$1`,[useremail],
-            (err,results)=>{
-                if(err){
-                    throw err;  
-                }
-                console.log("database connected");
-                console.log(results.rows);
-
-                if(results.rows.length>0){
-                    error.push({message: "Email already exists"});
-                    res.render("user/usersignup",{error});
-                }
-                else{
-                    let message="Your otp varification code is ";
-                    let subject="Verify your account";
-                    sendMail(useremail,userotp,subject,message);
-                    res.render('user/register',{firstname,lastname,useremail,userphone,userpassword,userotp,branch});
-                }
-            }
-        );
-    }
-})
-
-app.post("/user/register",async (req,res) =>{
-    let {firstname,lastname,useremail,userphone,userpassword,userotp,branch,uservarcode} = req.body;
-    let error=[];
-    if(userotp!=uservarcode){
-        error.push({message:"Invalid varification code"});
-        res.render("user/register",{error});
-    }
-    else{
-        let hash=await bcrypt.hash(userpassword,10);
-        console.log(hash);
-        pool.query(
-            `select * from branches where branchname=$1`,
-            [branch],
-            (err, results) => {
-            if (err) {
-                throw err;
-            }
-            let br=results.rows[0].branchid;
-            pool.query(
-                `INSERT INTO customers (firstname,lastname,customeremail,customerphone,customerpassword,branchid)
-                    VALUES ($1, $2, $3, $4, $5,$6)
-                    RETURNING firstname,lastname,customeremail,customerphone,customerpassword,branchid`,
-                [firstname,lastname,useremail,userphone,hash,br],
-                (err, results) => {
-                if (err) {
-                    throw err;
-                }
-                    console.log(results.rows);
-                    console.log("Data inserted");
-                    req.flash("success_msg", "You are now registered. Please log in");
-    
-                    let no_err=[];
-                    no_err.push({message:"Account created. You can log in now"});
-                    res.render("user/userlogin",{no_err});
-                }
-            );
-            }
-        );
-        
-    }
-})
-
-
-app.post("/user/userlogin",passport.authenticate("local",{
-    successRedirect:"dashboard",
-    failureRedirect:"userlogin",
-    failureFlash:true
-}));
 
 
 

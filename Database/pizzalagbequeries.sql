@@ -3,10 +3,18 @@
 select * from branches;
 select * from ordertype;
 select * from deliveryman;
-select * from branches where branchname='dhaka';
+select * from branches where branchname='Dhaka';
 select * from customers;
 select * from toppings;
 select * from orders;
+
+
+
+
+
+
+
+
 
 INSERT INTO customers (firstname,lastname,customeremail,customerphone,customerpassword,branchid)
                     VALUES ($1, $2, $3, $4, $5,$6)
@@ -62,6 +70,7 @@ where status=1 and branchid=1 and typeid=2;
 /*************************************************/
 -- generate delivery man id
 CREATE SEQUENCE deliveryman_sequence;
+ALTER SEQUENCE deliveryman_sequence RESTART WITH 1;
 
 CREATE OR REPLACE FUNCTION generate_deliveryman_id
     (deliveryman_name VARCHAR,phone_number VARCHAR,branch int,type int)
@@ -151,7 +160,8 @@ CREATE OR REPLACE PROCEDURE place_order(
     branch_id INT,
     type_id INT,
     address VARCHAR(100),
-    userid INT
+    userid INT,
+    Quantity int
 )
 AS $$
 DECLARE
@@ -168,7 +178,7 @@ BEGIN
     FROM toppings
     WHERE toppingid = topping_id;
 
-    total_price := pizza_price + topping_price;
+    total_price := (pizza_price + topping_price)*Quantity;
 
     -- Insert into orders table
     INSERT INTO orders (customerid, typeid, total, datetime, address, branchid, status)
@@ -189,7 +199,7 @@ BEGIN
     CALL place_order(1, 1, 1, 1, 'Amar Basha', 1);
 END $$;
 
-select * from orders;
+select * from orders natural join branches natural join customers;
 select * from orderpizzatopping;
 
 

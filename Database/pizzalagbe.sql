@@ -32,10 +32,7 @@ CREATE TABLE customers (
     lastname VARCHAR(50),
     customeremail VARCHAR(100),
     customerphone VARCHAR(20),
-    branchid INT,
-    customerpassword VARCHAR(300),
-    CONSTRAINT fk_customers_branchid FOREIGN KEY (branchid)
-        REFERENCES branches (branchid)
+    customerpassword VARCHAR(300)
 );
 
 CREATE TABLE ordertype (
@@ -46,7 +43,7 @@ CREATE TABLE ordertype (
 insert into ordertype (type)
         values ('Home Delivery'); --1
 insert into ordertype (type)
-        values ('Take away'); --1
+        values ('Take Away'); --1
 
 CREATE TABLE deliveryman (
     deliverymanid varchar(20) primary key,
