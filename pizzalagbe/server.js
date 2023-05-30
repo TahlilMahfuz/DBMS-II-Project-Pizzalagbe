@@ -415,12 +415,11 @@ app.get("/deliveryman/enddelivery", (req, res) => {
 
 
 // Delivery Man Post Methods
-app.post("/deliveryman/changepassword",async (req, res) => {
+app.post("/deliveryman/changepassword",(req, res) => {
     let { password } = req.body;
     console.log('The password is : '+password);
-    let hash=await bcrypt.hash(password,10);
     pool.query(
-        `update deliveryman set password=$1 where deliverymanid=$2`, [hash,req.session.deliveryman.deliverymanid],
+        `update deliveryman set password=$1 where deliverymanid=$2`, [password,req.session.deliveryman.deliverymanid],
         (err, results) => {
             if (err) {
                 throw err;
