@@ -71,6 +71,7 @@ CREATE TABLE orders (
     address VARCHAR(100),
     branchid int,
     status smallint default 1,
+    quantity INT,
     CONSTRAINT fk_orders_customerid FOREIGN KEY (customerid)
         REFERENCES customers (customerid),
     CONSTRAINT fk_orders_deliverymanid FOREIGN KEY (deliverymanid)
