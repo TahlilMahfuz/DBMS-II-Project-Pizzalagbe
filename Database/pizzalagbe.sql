@@ -26,15 +26,6 @@ create table admins(
     foreign key (branchid) references branches(branchid)
 );
 
-CREATE TABLE customers (
-    customerid SERIAL PRIMARY KEY,
-    firstname VARCHAR(50),
-    lastname VARCHAR(50),
-    customeremail VARCHAR(100),
-    customerphone VARCHAR(20),
-    customerpassword VARCHAR(300)
-);
-
 CREATE TABLE ordertype (
     typeid serial PRIMARY KEY,
     type VARCHAR(20)
@@ -45,14 +36,25 @@ insert into ordertype (type)
 insert into ordertype (type)
         values ('Take Away'); --1
 
+
+CREATE TABLE customers (
+    customerid SERIAL PRIMARY KEY,
+    firstname VARCHAR(50),
+    lastname VARCHAR(50),
+    customeremail VARCHAR(100),
+    customerphone VARCHAR(20),
+    customerpassword VARCHAR(300)
+);
+
 CREATE TABLE deliveryman (
     deliverymanid varchar(20) primary key,
     typeid INT,
     name VARCHAR(20),
     branchid INT,
-    avaiability INT default 1,
+    services INT default 0,
     password varchar(512) default '123',
     phone varchar(20),
+    rating double precision default 4.8,
     CONSTRAINT fk_deliveryman_typeid FOREIGN KEY (typeid)
         REFERENCES ordertype (typeid),
     CONSTRAINT fk_deliveryman_branchid FOREIGN KEY (branchid)
@@ -68,7 +70,7 @@ CREATE TABLE orders (
     datetime TIMESTAMP,
     address VARCHAR(100),
     branchid int,
-    status smallint,
+    status smallint default 1,
     CONSTRAINT fk_orders_customerid FOREIGN KEY (customerid)
         REFERENCES customers (customerid),
     CONSTRAINT fk_orders_deliverymanid FOREIGN KEY (deliverymanid)
@@ -78,7 +80,6 @@ CREATE TABLE orders (
     CONSTRAINT fk_orders_typeid FOREIGN KEY (typeid)
         REFERENCES ordertype (typeid)
 );
-
 
 CREATE TABLE pizzas (
     pizzaid serial PRIMARY KEY,
@@ -105,9 +106,4 @@ CREATE TABLE orderpizzatopping (
     CONSTRAINT fk_orderpizzatopping_toppingid FOREIGN KEY (toppingid)
         REFERENCES toppings (toppingid)
 );
-
-
-
-
-
 

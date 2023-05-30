@@ -81,6 +81,24 @@ app.get("/",checkIndexAuthenticated,(req,res) =>{
             }
         );
     }
+    else if(req.session.deliveryman){
+        pool.query(
+            `select * from orders natural join deliveryman,customers
+            where orders.customerid=customers.customerid and deliverymanid=$1 and status=2`,
+                [req.session.deliveryman.deliverymanid],
+                (err, results) => {
+                if (err) {
+                    throw err;
+                }
+                else{
+                    const resultsArray = Array.from(results.rows);
+                    console.log(results);
+                    res.render('deliveryman/deliverymandashboard',{results:resultsArray});
+                }
+    
+            }
+        );
+    }
     else{
         res.render('index');
     }
@@ -170,17 +188,21 @@ app.get("/user/cart", (req, res) => {
     pool.query(
         `SELECT *,
         CASE
-            WHEN status = 0 THEN 'Preparing'
-            WHEN status = 1 THEN 'Ready'
+            WHEN status = 1 THEN 'Preparing'
             WHEN status = 2 THEN 'Deliveryman in progress'
             WHEN status = 3 THEN 'Delivered'
+            WHEN status = 4 THEN 'Delivered'
+            WHEN status = 5 THEN 'Deleted'
         END AS status_text
         FROM orders
         NATURAL JOIN orderpizzatopping
         NATURAL JOIN customers
         NATURAL JOIN ordertype
         NATURAL JOIN branches
-        WHERE customerid = $1 AND status <=3`, [userid],
+        natural join deliveryman
+        natural join pizzas,toppings
+        WHERE customerid = $1 AND status <=5
+            and orderpizzatopping.toppingid=toppings.toppingid`, [userid],
         (err, results) => {
             if (err) {
                 throw err;
@@ -403,48 +425,21 @@ app.post("/deliveryman/delivered", (req, res) => {
                 throw err;
             } 
             pool.query(
-                `select * from orders natural join ordertype natural join customers natural join branches where status=1 and typeid=1`,
-                (err, results) => {
+                `select * from orders natural join deliveryman,customers
+                where orders.customerid=customers.customerid and deliverymanid=$1 and status=2`,
+                    [req.session.deliveryman.deliverymanid],
+                    (err, results) => {
                     if (err) {
                         throw err;
                     }
                     else{
+                        let no_err=[];
+                        no_err.push({message:'Payment taken and order has been delivered.'});
                         const resultsArray = Array.from(results.rows);
                         console.log(results);
-                        let no_err=[];
-                        no_err.push({message:'Payment collected and order has been delivered'});
                         res.render('deliveryman/deliverymandashboard',{results:resultsArray,no_err});
                     }
-                }
-            );
-        }
-    );
-});
-app.post("/deliveryman/accept", (req, res) => {
-    let { orderid } = req.body;
-    let deliverymanid=req.session.deliveryman.deliverymanid;
-    console.log('The deliveryman id is : '+deliverymanid);
-    console.log('The order id is : '+orderid);
-    console.log('The branch id is : '+req.session.deliveryman.branchid);
-    pool.query(
-        `update orders set status=status+1, deliverymanid=$1 where orderid=$2`, [deliverymanid,orderid],
-        (err, results) => {
-            if (err) {
-                throw err;
-            } 
-            pool.query(
-                `select * from orders natural join ordertype natural join customers natural join branches where status=1 and typeid=1`,
-                (err, results) => {
-                    if (err) {
-                        throw err;
-                    }
-                    else{
-                        const resultsArray = Array.from(results.rows);
-                        console.log(results);
-                        let no_err=[];
-                        no_err.push({message:'Order added with your account'});
-                        res.render('deliveryman/deliverymandashboard',{results:resultsArray,no_err});
-                    }
+        
                 }
             );
         }
@@ -464,8 +459,9 @@ app.post("/deliveryman/deliverymanlogin", (req, res) => {
                     const deliveryman=results.rows[0];
                     req.session.deliveryman=deliveryman;
                     pool.query(
-                        `select * from orders natural join ordertype natural join customers natural join branches where status=1 and typeid=1 and branchid=$1`,
-                            [req.session.deliveryman.branchid],
+                        `select * from orders natural join deliveryman,customers
+                        where orders.customerid=customers.customerid and deliverymanid=$1 and status=2`,
+                            [req.session.deliveryman.deliverymanid],
                             (err, results) => {
                             if (err) {
                                 throw err;
@@ -616,27 +612,13 @@ app.get("/admin/showorders", (req,res) =>{
     pool.query(
         `select *
         from orders natural join orderpizzatopping natural join customers natural join ordertype natural join branches natural join admins
-        where status=0 and branchid=$1`,[req.session.admin.branchid],
+        where status=1 and branchid=$1`,[req.session.admin.branchid],
         (err,results)=>{
             if(err){
                 throw err;
             }
             const resultsArray = Array.from(results.rows);
             res.render('admin/showorders',{results: resultsArray});
-        }
-    );
-});
-app.get("/admin/yettodeliver", (req,res) =>{
-    pool.query(
-        `select *
-        from orders natural join orderpizzatopping natural join customers natural join ordertype natural join branches natural join admins
-        where status=1 and branchid=$1 and typeid=2`,[req.session.admin.branchid],
-        (err,results)=>{
-            if(err){
-                throw err;
-            }
-            const resultsArray = Array.from(results.rows);
-            res.render('admin/yettodeliver',{results: resultsArray});
         }
     );
 });
@@ -670,22 +652,22 @@ app.post("/admin/delivered", (req,res) =>{
     let {orderid}=req.body;
     console.log("The orderid name is : "+orderid);
     pool.query(
-        `update orders set status=status+2 where orderid=$1`,[orderid],
+        `update orders set status=status+1 where orderid=$1`,[orderid],
         (err,results)=>{
             if(err){
                 throw err;
             }
             else{
+                let no_err=[];
+                no_err.push({message:"Payment has been taken and order has been delivered"});
                 pool.query(
                     `select *
-                    from orders natural join orderpizzatopping natural join customers natural join ordertype natural join branches
-                    where status=0`,
+                    from orders natural join orderpizzatopping natural join customers natural join ordertype natural join branches natural join admins
+                    where status=0 and branchid=$1`,[req.session.admin.branchid],
                     (err,results)=>{
                         if(err){
                             throw err;
                         }
-                        let no_err=[];
-                        no_err.push({message:"Payment has been taken and pizza delivered to the customer"});
                         const resultsArray = Array.from(results.rows);
                         res.render('admin/showorders',{results: resultsArray,no_err});
                     }
@@ -704,16 +686,16 @@ app.post("/admin/ready", (req,res) =>{
                 throw err;
             }
             else{
+                let no_err=[];
+                no_err.push({message:'Order is ready and added to delivery list'});
                 pool.query(
                     `select *
-                    from orders natural join orderpizzatopping natural join customers natural join ordertype natural join branches
-                    where status=0`,
+                    from orders natural join orderpizzatopping natural join customers natural join ordertype natural join branches natural join admins
+                    where status=1 and branchid=$1`,[req.session.admin.branchid],
                     (err,results)=>{
                         if(err){
                             throw err;
                         }
-                        let no_err=[];
-                        no_err.push({message:"Order is ready and added to the delivery section."});
                         const resultsArray = Array.from(results.rows);
                         res.render('admin/showorders',{results: resultsArray,no_err});
                     }
@@ -734,16 +716,14 @@ app.post("/admin/delete", (req,res) =>{
             else{
                 pool.query(
                     `select *
-                    from orders natural join orderpizzatopping natural join customers natural join ordertype natural join branches
-                    where status=0`,
+                    from orders natural join orderpizzatopping natural join customers natural join ordertype natural join branches natural join admins
+                    where status=1 and branchid=$1`,[req.session.admin.branchid],
                     (err,results)=>{
                         if(err){
                             throw err;
                         }
-                        let error=[];
-                        error.push({message:"Order has been deleted"});
                         const resultsArray = Array.from(results.rows);
-                        res.render('admin/showorders',{results: resultsArray,error});
+                        res.render('admin/showorders',{results: resultsArray});
                     }
                 );
             }
@@ -821,7 +801,7 @@ app.post("/admin/adddeliveryman",async (req,res) =>{
 
     pool.query(
         `Insert into deliveryman (typeid,name,branchid,phone)
-        values ($1,$2,$3,$4) returning deliverymanid,typeid,name,branchid,avaiability,phone`,[dtype,name,branch,phone],
+        values ($1,$2,$3,$4) returning deliverymanid,typeid,name,branchid,phone`,[dtype,name,branch,phone],
         (err,results)=>{
             if(err){
                 throw err;
