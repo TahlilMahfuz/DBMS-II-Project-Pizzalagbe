@@ -644,8 +644,13 @@ app.get("/admin/showorders", (req,res) =>{
     console.log(req.session.admin);
     pool.query(
         `select *
-        from orders natural join orderpizzatopping natural join customers natural join ordertype natural join branches natural join admins
-        where status=1 and branchid=$1`,[req.session.admin.branchid],
+        from orders natural join orderpizzatopping
+            natural join customers
+            natural join ordertype
+            natural join branches
+            natural join admins,pizzas,toppings
+        where status=1 and branchid=$1
+        and orderpizzatopping.pizzaid=pizzas.pizzaid and orderpizzatopping.toppingid=toppings.toppingid`,[req.session.admin.branchid],
         (err,results)=>{
             if(err){
                 throw err;

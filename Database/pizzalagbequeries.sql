@@ -86,14 +86,16 @@ select *
 from orders natural join orderpizzatopping natural join customers natural join ordertype natural join branches natural join admins
 where status=1 and branchid=1;
 
-select * from deliveryman;
+select * from orders;
 
 select *
 from orders natural join orderpizzatopping
-    natural join customers natural join
-    ordertype natural join branches natural join admins,pizzas,toppings
-WHERE pizzas.pizzaid=orderpizzatopping.pizzaid
-  and toppings.toppingid=orderpizzatopping.toppingid
+    natural join customers
+    natural join ordertype
+    natural join branches
+    natural join admins,pizzas,toppings
+where status=1 and branchid=1
+and orderpizzatopping.pizzaid=pizzas.pizzaid and orderpizzatopping.toppingid=toppings.toppingid;
 
 -- Funtions and procedures
 /*************************************************/
