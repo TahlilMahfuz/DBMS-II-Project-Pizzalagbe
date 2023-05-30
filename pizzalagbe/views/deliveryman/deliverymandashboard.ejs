@@ -29,7 +29,7 @@
                         <th>Branch Name</th>
                         <th>Address</th>
                         <th>Total</th>
-                        <th>Accept</th>
+                        <th>Delivery Status</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -45,9 +45,9 @@
                             <td><%= results[i].address %></td>
                             <td><%= results[i].total %></td>
                             <td>
-                                <form action="/deliveryman/accept" method="POST">
+                                <form action="/deliveryman/delivered" method="POST">
                                     <input type="hidden" id="orderid" name="orderid" value="<%= results[i].orderid %>">
-                                    <button type="submit" class="btn btn-success">Accept</button>
+                                    <button type="submit" class="btn btn-success">Delivered</button>
                                 </form>
                             </td>
                         </tr>

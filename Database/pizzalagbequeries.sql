@@ -3,10 +3,32 @@
 select * from branches;
 select * from ordertype;
 select * from deliveryman;
-select * from branches where branchname='dhaka';
+select * from branches where branchname='Dhaka';
 select * from customers;
 select * from toppings;
-select * from customers where customeremail=$1;
+select * from orders;
+
+select * from orders;
+
+SELECT *,
+        CASE
+            WHEN status = 0 THEN 'Preparing'
+            WHEN status = 1 THEN 'Ready'
+            WHEN status = 2 THEN 'Deliveryman in progress'
+            WHEN status = 3 THEN 'Delivered'
+        END AS status_text
+        FROM orders
+        NATURAL JOIN orderpizzatopping
+        NATURAL JOIN customers
+        NATURAL JOIN ordertype
+        NATURAL JOIN branches
+        natural join deliveryman
+        natural join pizzas,toppings
+        WHERE customerid = 1 AND status <=3
+            and orderpizzatopping.toppingid=toppings.toppingid;
+
+
+
 INSERT INTO customers (firstname,lastname,customeremail,customerphone,customerpassword,branchid)
                     VALUES ($1, $2, $3, $4, $5,$6)
                     RETURNING firstname,lastname,customeremail,customerphone,customerpassword,branchid;
@@ -27,10 +49,6 @@ insert into ordertype (type)
 
 insert into ordertype (type)
         values ('Home delivery');--2
-
-Insert into deliveryman (typeid,name,branchid,phone)
-        values (1,'Mr. Tahlil',1,01782633834) returning deliverymanid,typeid,name,branchid,avaiability,phone;
-
 
 select * from branches natural join ordertype;
 
@@ -55,12 +73,28 @@ from orders natural join orderpizzatopping natural join customers natural join o
 where status=1 and branchid=1 and typeid=2;
 
 
+insert into deliveryman (typeid, name, branchid, phone)
+values (2,'Mahfuz',1,'1287469164');
+
+select * from orders natural join deliveryman,customers
+where orders.customerid=customers.customerid and deliverymanid='1-1-Zub-Dha-834' and status=2;
+
+
+select * from orders;
+
+select *
+from orders natural join orderpizzatopping natural join customers natural join ordertype natural join branches natural join admins
+where status=1 and branchid=1;
+
+
+
 
 
 -- Funtions and procedures
 /*************************************************/
 -- generate delivery man id
 CREATE SEQUENCE deliveryman_sequence;
+ALTER SEQUENCE deliveryman_sequence RESTART WITH 1;
 
 CREATE OR REPLACE FUNCTION generate_deliveryman_id
     (deliveryman_name VARCHAR,phone_number VARCHAR,branch int,type int)
@@ -109,7 +143,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-
+select * from deliveryman;
 
 -- Execute trigger
 CREATE or replace TRIGGER before_insert_deliveryman
@@ -136,12 +170,6 @@ $$
 
 
 
-
-
-
-
-
-
 /***************************************************************/
 -- Place order
 CREATE OR REPLACE PROCEDURE place_order(
@@ -150,7 +178,8 @@ CREATE OR REPLACE PROCEDURE place_order(
     branch_id INT,
     type_id INT,
     address VARCHAR(100),
-    userid INT
+    userid INT,
+    Quantity int
 )
 AS $$
 DECLARE
@@ -158,6 +187,7 @@ DECLARE
     pizza_price DOUBLE PRECISION;
     topping_price DOUBLE PRECISION;
     order_id INT;
+    D_id varchar(20) default 'ami nai';
 BEGIN
     SELECT price INTO pizza_price
     FROM pizzas
@@ -167,12 +197,22 @@ BEGIN
     FROM toppings
     WHERE toppingid = topping_id;
 
-    total_price := pizza_price + topping_price;
+    total_price := (pizza_price + topping_price)*Quantity;
 
-    -- Insert into orders table
-    INSERT INTO orders (customerid, typeid, total, datetime, address, branchid, status)
-    VALUES (userid, type_id, total_price, NOW(), address, branch_id, 0)
+    -- Get a deliveryman who is available
+    select deliverymanid into D_id
+    from deliveryman
+    where branchid=branch_id and typeid=type_id
+    order by services
+    limit 1;
+
+    -- Insert into orders table and update delivery man
+    INSERT INTO orders (deliverymanid,customerid, typeid, total, datetime, address, branchid)
+    VALUES (D_id,userid, type_id, total_price, NOW(), address, branch_id)
     RETURNING orderid INTO order_id;
+
+    --Update deliveryman table
+    update deliveryman set services=services+1 where deliverymanid=D_id;
 
     -- Insert into orderpizzatopping table
     INSERT INTO orderpizzatopping (orderid, pizzaid, toppingid)
@@ -185,13 +225,37 @@ $$ LANGUAGE plpgsql;
 DO $$
 BEGIN
     -- Call the place_order procedure with the desired parameter values
-    CALL place_order(1, 1, 1, 1, 'Amar Basha', 1);
+    CALL place_order(1, 1, 1, 1, 'Amar Basha', 1,1);
 END $$;
 
-select * from orders;
-select * from orderpizzatopping;
+
+
+
+
+
+
+
+
 
 
 
 /*************************************************************************/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

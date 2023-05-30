@@ -23,7 +23,11 @@
                         <th>Order ID</th>
                         <th>Customer ID</th>
                         <th>Customer Name</th>
-                        <th>Type Name</th>
+                        <th>Delivery type</th>
+                        <th>Deliveryman Name</th>
+                        <th>Deliveryman Phone</th>
+                        <th>Pizza Name</th>
+                        <th>Topping Name</th>
                         <th>Total</th>
                         <th>Date and Time</th>
                         <th>Address</th>
@@ -38,6 +42,10 @@
                             <td><%= result.customerid %></td>
                             <td><%= result.firstname %> <%= result.lastname %></td>
                             <td><%= result.type %></td>
+                            <td><%= result.name %></td>
+                            <td><%= result.phone %></td>
+                            <td><%= result.pizzaname %></td>
+                            <td><%= result.toppingname %></td>
                             <td><%= result.total %></td>
                             <td><%= result.datetime %></td>
                             <td><%= result.address %></td>
