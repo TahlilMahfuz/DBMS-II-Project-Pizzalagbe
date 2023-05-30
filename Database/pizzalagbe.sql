@@ -8,14 +8,12 @@ DROP TABLE IF EXISTS deliveryman;
 DROP TABLE IF EXISTS ordertype;
 DROP TABLE IF EXISTS branches;
 
-
-
 CREATE TABLE branches (
     branchid SERIAL PRIMARY KEY,
     branchname VARCHAR(20)
 );
 INSERT INTO branches (branchname)
-                        VALUES ('dhaka'); --1
+                        VALUES ('Dhaka'); --1
 
 create table admins(
     adminid serial primary key,
