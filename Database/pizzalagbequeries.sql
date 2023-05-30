@@ -86,8 +86,14 @@ select *
 from orders natural join orderpizzatopping natural join customers natural join ordertype natural join branches natural join admins
 where status=1 and branchid=1;
 
-
 select * from deliveryman;
+
+select *
+from orders natural join orderpizzatopping
+    natural join customers natural join
+    ordertype natural join branches natural join admins,pizzas,toppings
+WHERE pizzas.pizzaid=orderpizzatopping.pizzaid
+  and toppings.toppingid=orderpizzatopping.toppingid
 
 -- Funtions and procedures
 /*************************************************/
@@ -166,9 +172,6 @@ END;
 $$
 
 
-
-
-
 /***************************************************************/
 -- Place order
 CREATE OR REPLACE PROCEDURE place_order(
@@ -206,8 +209,8 @@ BEGIN
     limit 1;
 
     -- Insert into orders table and update delivery man
-    INSERT INTO orders (deliverymanid,customerid, typeid, total, datetime, address, branchid)
-    VALUES (D_id,userid, type_id, total_price, NOW(), address, branch_id)
+    INSERT INTO orders (deliverymanid,customerid, typeid, total, datetime, address, branchid,quantity)
+    VALUES (D_id,userid, type_id, total_price, NOW(), address, branch_id,quantity)
     RETURNING orderid INTO order_id;
 
     --Update deliveryman table
