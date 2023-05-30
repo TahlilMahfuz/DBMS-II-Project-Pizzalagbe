@@ -366,6 +366,9 @@ app.post("/user/userlogin",passport.authenticate("local",{
 
 
 // Delivery Man Get Methods
+app.get("/deliveryman/changepassword", (req, res) => {
+    res.render('deliveryman/changepassword');
+});
 app.get("/deliveryman/deliverymanlogin", (req, res) => {
     res.render('deliveryman/deliverymanlogin');
 });
@@ -412,6 +415,36 @@ app.get("/deliveryman/enddelivery", (req, res) => {
 
 
 // Delivery Man Post Methods
+app.post("/deliveryman/changepassword",(req, res) => {
+    let { password } = req.body;
+    console.log('The password is : '+password);
+    pool.query(
+        `update deliveryman set password=$1 where deliverymanid=$2`, [password,req.session.deliveryman.deliverymanid],
+        (err, results) => {
+            if (err) {
+                throw err;
+            } 
+            pool.query(
+                `select * from orders natural join deliveryman,customers
+                where orders.customerid=customers.customerid and deliverymanid=$1 and status=2`,
+                    [req.session.deliveryman.deliverymanid],
+                    (err, results) => {
+                    if (err) {
+                        throw err;
+                    }
+                    else{
+                        let no_err=[];
+                        no_err.push({message:'Password has been updated.'});
+                        const resultsArray = Array.from(results.rows);
+                        console.log(results);
+                        res.render('deliveryman/deliverymandashboard',{results:resultsArray,no_err});
+                    }
+        
+                }
+            );
+        }
+    );
+});
 app.post("/deliveryman/delivered", (req, res) => {
     let { orderid } = req.body;
     let deliverymanid=req.session.deliveryman.deliverymanid;

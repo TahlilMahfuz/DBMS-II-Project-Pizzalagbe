@@ -87,8 +87,7 @@ from orders natural join orderpizzatopping natural join customers natural join o
 where status=1 and branchid=1;
 
 
-
-
+select * from deliveryman;
 
 -- Funtions and procedures
 /*************************************************/
