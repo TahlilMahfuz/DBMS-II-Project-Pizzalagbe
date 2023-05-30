@@ -89,7 +89,6 @@ where status=1 and branchid=1;
 
 
 
-
 -- Funtions and procedures
 /*************************************************/
 -- generate delivery man id
