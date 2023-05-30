@@ -203,7 +203,7 @@ BEGIN
     select deliverymanid into D_id
     from deliveryman
     where branchid=branch_id and typeid=type_id
-    order by services
+    order by services asc
     limit 1;
 
     -- Insert into orders table and update delivery man
