@@ -54,14 +54,19 @@
                             <td><%= result.address %></td>
                             <td><%= result.branchname %></td>
                             <td><%= result.status_text %></td>
-                            <td>
-                                <form action="/user/review" method="POST">
-                                    <input type="hidden" id="orderid" name="orderid" value="<%= result.orderid %>">
-                                    <button type="submit" class="btn btn-success">Review</button>
-                                </form>
-                            </td>
+                            <% if (result.rating === null) { %>
+                                <td>
+                                    <form action="/user/review" method="POST">
+                                        <input type="hidden" id="orderid" name="orderid" value="<%= result.orderid %>">
+                                        <button type="submit" class="btn btn-success">Review</button>
+                                    </form>
+                                </td>
+                            <% } else { %>
+                                <td>Review submitted</td>
+                            <% } %>
                         </tr>
-                    <% }); %>
+                    <% }) %>
+                    
                 </tbody>
             </table>
         </div>

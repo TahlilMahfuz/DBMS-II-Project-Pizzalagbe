@@ -101,6 +101,7 @@ CREATE TABLE orderpizzatopping (
     orderid INT,
     pizzaid INT,
     toppingid INT,
+    CONSTRAINT pk_orderpizzatopping PRIMARY KEY (orderid, pizzaid, toppingid),
     CONSTRAINT fk_orderpizzatopping_orderid FOREIGN KEY (orderid)
         REFERENCES orders (orderid),
     CONSTRAINT fk_orderpizzatopping_pizzaid FOREIGN KEY (pizzaid)

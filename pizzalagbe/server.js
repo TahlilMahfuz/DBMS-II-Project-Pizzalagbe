@@ -239,11 +239,6 @@ app.get("/user/cart", (req, res) => {
 
 
 
-
-
-
-
-
 //CUSTOMER POST METHODS
 app.post("/user/makereview", (req, res) => {
     let {orderid,rating,comment}=req.body;
@@ -459,9 +454,6 @@ app.get("/deliveryman/enddelivery", (req, res) => {
 
 
 
-
-
-
 // Delivery Man Post Methods
 app.post("/deliveryman/changepassword",(req, res) => {
     let { password } = req.body;
@@ -593,49 +585,6 @@ app.post("/deliveryman/deliverymanlogin", (req, res) => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //Admin Get Methods
 app.get("/admin/adminlogin",checkAuthenticated,(req,res) =>{
     res.render('admin/adminlogin');
@@ -687,6 +636,27 @@ app.get("/admin/addtopping", (req,res) =>{
 })
 app.get("/admin/addbranch", (req,res) =>{
     res.render('admin/addbranch');
+});
+app.get("/admin/getreviews", (req,res) =>{
+    console.log(req.session.admin);
+    pool.query(
+        `select *
+        from orders natural join orderpizzatopping
+            natural join customers
+            natural join ordertype
+            natural join branches
+            natural join deliveryman
+            natural join admins,pizzas,toppings
+        where rating is not null and branchid=$1
+        and orderpizzatopping.pizzaid=pizzas.pizzaid and orderpizzatopping.toppingid=toppings.toppingid`,[req.session.admin.branchid],
+        (err,results)=>{
+            if(err){
+                throw err;
+            }
+            const resultsArray = Array.from(results.rows);
+            res.render('admin/showreviews',{results: resultsArray});
+        }
+    );
 });
 app.get("/admin/showorders", (req,res) =>{
     console.log(req.session.admin);
