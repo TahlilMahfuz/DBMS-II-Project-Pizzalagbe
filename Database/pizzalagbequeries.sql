@@ -100,8 +100,15 @@ and orderpizzatopping.pizzaid=pizzas.pizzaid and orderpizzatopping.toppingid=top
 
 
 
-
-
+select *
+        from orders natural join orderpizzatopping
+            natural join customers
+            natural join ordertype
+            natural join branches
+            natural join deliveryman
+            natural join admins,pizzas,toppings
+        where rating is not null and branchid=1
+        and orderpizzatopping.pizzaid=pizzas.pizzaid and orderpizzatopping.toppingid=toppings.toppingid
 
 
 
