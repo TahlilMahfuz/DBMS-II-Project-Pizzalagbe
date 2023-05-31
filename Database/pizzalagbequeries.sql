@@ -97,6 +97,26 @@ from orders natural join orderpizzatopping
 where status=1 and branchid=1
 and orderpizzatopping.pizzaid=pizzas.pizzaid and orderpizzatopping.toppingid=toppings.toppingid;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 -- Funtions and procedures
 /*************************************************/
 -- generate delivery man id
@@ -174,6 +194,16 @@ END;
 $$
 
 
+
+
+
+
+
+
+
+
+
+
 /***************************************************************/
 -- Place order
 CREATE OR REPLACE PROCEDURE place_order(
@@ -242,17 +272,31 @@ END $$;
 
 
 
-
 /*************************************************************************/
+-- Review orders
+drop procedure review_order(Rate double precision, usercomment varchar(20), order_id int);
+CREATE OR REPLACE PROCEDURE review_order(
+    Rate double precision,
+    usercomment varchar(20),
+    order_id int
+)
+AS $$
+DECLARE
 
+BEGIN
+    update orders
+    set rating= Rate,comment=usercomment
+    where orderid=order_id;
+END
+$$ LANGUAGE plpgsql;
 
+--Testing
+DO $$
+BEGIN
+    CALL review_order(5,'khub valo',1);
+END $$;
 
-
-
-
-
-
-
+/************************************************************************/
 
 
 

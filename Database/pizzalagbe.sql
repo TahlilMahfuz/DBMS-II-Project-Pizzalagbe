@@ -54,7 +54,6 @@ CREATE TABLE deliveryman (
     services INT default 0,
     password varchar(512) default '123',
     phone varchar(20),
-    rating double precision default 4.8,
     CONSTRAINT fk_deliveryman_typeid FOREIGN KEY (typeid)
         REFERENCES ordertype (typeid),
     CONSTRAINT fk_deliveryman_branchid FOREIGN KEY (branchid)
@@ -72,6 +71,8 @@ CREATE TABLE orders (
     branchid int,
     status smallint default 1,
     quantity INT,
+    rating double precision,
+    comment varchar(100),
     CONSTRAINT fk_orders_customerid FOREIGN KEY (customerid)
         REFERENCES customers (customerid),
     CONSTRAINT fk_orders_deliverymanid FOREIGN KEY (deliverymanid)

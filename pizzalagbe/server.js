@@ -188,11 +188,11 @@ app.get("/user/cart", (req, res) => {
     pool.query(
         `SELECT *,
         CASE
-            WHEN status = 1 THEN 'Preparing'
-            WHEN status = 2 THEN 'Deliveryman in progress'
-            WHEN status = 3 THEN 'Delivered'
-            WHEN status = 4 THEN 'Delivered'
-            WHEN status = 5 THEN 'Deleted'
+        WHEN status = 1 THEN 'Preparing'
+        WHEN status = 2 THEN 'Deliveryman in progress'
+        WHEN status = 3 THEN 'Delivered'
+        WHEN status = 4 THEN 'Delivered'
+        WHEN status = 5 THEN 'Deleted'
         END AS status_text
         FROM orders
         NATURAL JOIN orderpizzatopping
@@ -202,7 +202,7 @@ app.get("/user/cart", (req, res) => {
         natural join deliveryman
         natural join pizzas,toppings
         WHERE customerid = $1 AND status <=5
-            and orderpizzatopping.toppingid=toppings.toppingid`, [userid],
+        and orderpizzatopping.toppingid=toppings.toppingid`, [userid],
         (err, results) => {
             if (err) {
                 throw err;
@@ -245,6 +245,54 @@ app.get("/user/cart", (req, res) => {
 
 
 //CUSTOMER POST METHODS
+app.post("/user/makereview", (req, res) => {
+    let {orderid,rating,comment}=req.body;
+    console.log('The rating, comment and orderid is'+rating+" "+comment+" "+orderid);
+    pool.query(
+        `call review_order($1,$2,$3)`, [rating,comment,orderid],
+        (err, results) => {
+            if (err) {
+                throw err;
+            }
+            else{
+                let no_err=[];
+                no_err.push({message:"Your review has been submitted"});
+                let userid = req.session.user.customerid;
+                pool.query(
+                    `SELECT *,
+                    CASE
+                    WHEN status = 1 THEN 'Preparing'
+                    WHEN status = 2 THEN 'Deliveryman in progress'
+                    WHEN status = 3 THEN 'Delivered'
+                    WHEN status = 4 THEN 'Delivered'
+                    WHEN status = 5 THEN 'Deleted'
+                    END AS status_text
+                    FROM orders
+                    NATURAL JOIN orderpizzatopping
+                    NATURAL JOIN customers
+                    NATURAL JOIN ordertype
+                    NATURAL JOIN branches
+                    natural join deliveryman
+                    natural join pizzas,toppings
+                    WHERE customerid = $1 AND status <=5
+                    and orderpizzatopping.toppingid=toppings.toppingid`, [userid],
+                    (err, results) => {
+                        if (err) {
+                            throw err;
+                        }
+
+                        const resultsArray = Array.from(results.rows);
+                        res.render('user/cart', { results: resultsArray,no_err });
+                    }
+                );
+            }
+        }
+    );
+});
+app.post("/user/review", (req, res) => {
+    let {orderid}=req.body;
+    res.render('user/review',{orderid});
+});
 app.post("/user/orderpizza", (req, res) => {
     let userid = req.session.user.customerid;
     let { pizzas, toppings, ordertype, branch, address, quantity } = req.body;
