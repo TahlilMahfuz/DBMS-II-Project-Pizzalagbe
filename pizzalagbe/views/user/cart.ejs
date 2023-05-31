@@ -34,6 +34,7 @@
                         <th>Address</th>
                         <th>Branch Name</th>
                         <th>Status</th>
+                        <th>Review</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -53,6 +54,12 @@
                             <td><%= result.address %></td>
                             <td><%= result.branchname %></td>
                             <td><%= result.status_text %></td>
+                            <td>
+                                <form action="/user/review" method="POST">
+                                    <input type="hidden" id="orderid" name="orderid" value="<%= result.orderid %>">
+                                    <button type="submit" class="btn btn-success">Review</button>
+                                </form>
+                            </td>
                         </tr>
                     <% }); %>
                 </tbody>
