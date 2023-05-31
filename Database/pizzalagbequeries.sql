@@ -2,13 +2,18 @@
 -- Queries
 select * from branches;
 select * from ordertype;
-select * from deliveryman;
 select * from branches where branchname='Dhaka';
 select * from customers;
 select * from toppings;
+select * from orders order by orderid asc;
+
+select * from deliveryman;
 select * from orders;
 
-select * from orders;
+
+select * from orders natural join deliveryman,customers,branches,ordertype
+where orders.customerid=customers.customerid and deliverymanid='6-1-Taw-Dha-204' and status=2
+and ordertype.typeid=orders.typeid and branches.branchid=orders.branchid;
 
 SELECT *,
         CASE
