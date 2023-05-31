@@ -532,8 +532,9 @@ app.post("/deliveryman/deliverymanlogin", (req, res) => {
                     const deliveryman=results.rows[0];
                     req.session.deliveryman=deliveryman;
                     pool.query(
-                        `select * from orders natural join deliveryman,customers
-                        where orders.customerid=customers.customerid and deliverymanid=$1 and status=2`,
+                        `select * from orders natural join deliveryman,customers,branches,ordertype
+                        where orders.customerid=customers.customerid and deliverymanid=$1 and status=2
+                        and ordertype.typeid=orders.typeid and branches.branchid=orders.branchid`,
                             [req.session.deliveryman.deliverymanid],
                             (err, results) => {
                             if (err) {
