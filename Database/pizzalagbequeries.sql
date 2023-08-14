@@ -5,10 +5,10 @@ select * from ordertype;
 select * from branches where branchname='Dhaka';
 select * from customers;
 select * from toppings;
-select * from orders order by orderid asc;
+select * from orders;
 
 select * from deliveryman;
-select * from orders;
+select * from orders  order by orderid asc;
 
 
 select * from orders natural join deliveryman,customers,branches,ordertype
@@ -183,6 +183,8 @@ END;
 $$ LANGUAGE plpgsql;
 
 select * from deliveryman;
+
+
 
 -- Execute trigger
 CREATE or replace TRIGGER before_insert_deliveryman
