@@ -380,8 +380,6 @@ app.post("/user/register",async (req,res) =>{
         
     }
 })
-
-
 app.post("/user/userlogin",passport.authenticate("local",{
     successRedirect:"dashboard",
     failureRedirect:"userlogin",
